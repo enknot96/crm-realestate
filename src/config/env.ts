@@ -16,5 +16,17 @@ const envSchema = z.object({
   ADMIN_PASSWORD_HASH: z.string().min(1),
   NOTIFY_EMAIL_TO: z.string().min(1),
   DEMO_MODE: z.enum(["true", "false"]).transform((v) => v === "true"),
-  MONTHLY_MESSAGE_QUOTA: z.coerce.number(),
+  MONTHLY_MESSAGE_QUOTA: z.coerce.number().positive(),
 });
+
+const result = envSchema.safeParse(process.env);
+
+if (!result.success) {
+  const errorMessages = result.error.issues.map(
+    (issue) => `${String(issue.path[0])}: ${issue.message}`,
+  );
+  console.error(errorMessages.join("\n"));
+  process.exit(1);
+}
+
+export const env = result.data;
