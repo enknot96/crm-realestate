@@ -3,4 +3,4 @@
 @docs/crm-realestate.md
 
 ## 現在のフェーズ
-Phase 0 — 基盤と型の土台
+Phase 1 — LINE Webhook と友だち登録
