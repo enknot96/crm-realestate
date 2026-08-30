@@ -38,6 +38,14 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  // Phase1: Route Handler(route.ts)は合成ルート(domainのロジックとinfraの実装を繋ぐ場所)として
+  // 一時的にinfraの直接importを許可する。Repositoryパターン+DIによる正式な抽象化はPhase2で導入する。
+  {
+    files: ["src/app/**/route.ts"],
+    rules: {
+      "import/no-restricted-paths": "off",
+    },
+  },
   {
     files: ["src/domain/**/*.{ts,tsx}"],
     rules: {
