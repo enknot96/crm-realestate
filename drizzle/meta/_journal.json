@@ -15,6 +15,13 @@
       "when": 1788072915869,
       "tag": "0001_spooky_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788079560053,
+      "tag": "0002_tiresome_rhodey",
+      "breakpoints": true
     }
   ]
 }

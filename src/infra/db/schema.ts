@@ -1,6 +1,5 @@
 import { CustomerId, LineUserId, PropertyId } from "@/domain/shared/branded";
-import { integer, primaryKey, serial, uuid } from "drizzle-orm/pg-core";
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 // 定数 lineFriends = TS側でこのテーブルを参照するときに使う名前
 // 第一引数 lineFriends = テーブル名
