@@ -6,11 +6,11 @@ export const lineFriends = pgTable("line_friends", {
   // lineFriends.lineUserId のように書き、TS側でアクセスする
   lineUserId: text("line_user_id").primaryKey(),
   displayName: text("display_name").notNull(),
-  followedAt: timestamp("followed_at").notNull(),
-  blockedAt: timestamp("blocked_at"),
+  followedAt: timestamp("followed_at", { withTimezone: true }).notNull(),
+  blockedAt: timestamp("blocked_at", { withTimezone: true }),
 });
 
 export const lineWebhookEvents = pgTable("line_webhook_events", {
   eventId: text("event_id").primaryKey(),
-  receivedAt: timestamp("received_at").notNull().defaultNow(),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
 });
