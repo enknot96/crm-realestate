@@ -9,6 +9,7 @@ function createDb() {
 
 let _db: ReturnType<typeof createDb> | null = null;
 
+// DB操作オブジェクトを受け取る
 export function getDb() {
   if (!_db) _db = createDb();
   return _db;
