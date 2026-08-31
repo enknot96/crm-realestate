@@ -1,0 +1,9 @@
+import { scryptSync, timingSafeEqual } from "node:crypto";
+
+export function verifyPassword(password: string, storedHash: string): boolean {
+  const [salt, hash] = storedHash.split(":");
+  if (!salt || !hash) return false;
+  const derivedHash = scryptSync(password, salt, 64);
+  const storedHashBuffer = Buffer.from(hash, "hex");
+  return timingSafeEqual(derivedHash, storedHashBuffer);
+}
