@@ -1,5 +1,6 @@
 import { scryptSync, timingSafeEqual } from "node:crypto";
 
+// .env.localのADMIN_PASSWORD_HASHが、管理画面にログインするための本物のパスワード
 export function verifyPassword(password: string, storedHash: string): boolean {
   const [salt, hash] = storedHash.split(":");
   if (!salt || !hash) return false;
