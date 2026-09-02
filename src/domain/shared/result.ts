@@ -15,7 +15,7 @@ export async function fromPromise<T>(
   try {
     const value = await fn();
     return ok(value);
-  } catch {
-    return err(errorMessage);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : errorMessage);
   }
 }
