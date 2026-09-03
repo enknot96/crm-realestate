@@ -38,10 +38,11 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  // Phase1: Route Handler(route.ts)は合成ルート(domainのロジックとinfraの実装を繋ぐ場所)として
-  // 一時的にinfraの直接importを許可する。Repositoryパターン+DIによる正式な抽象化はPhase2で導入する。
+  // route.ts/actions.tsは合成ルート(domainのユースケース関数に、infraの実装(例: drizzleCustomerRepository)を
+  // 引数として渡して呼び出す場所)として、infraの直接importを許可する。
+  // Phase2でRepositoryパターン+DIを導入したことで、ここが「domainとinfraをつなぐ唯一の場所」という正式な役割になった。
   {
-    files: ["src/app/**/route.ts"],
+    files: ["src/app/**/route.ts", "src/app/**/actions.ts"],
     rules: {
       "import/no-restricted-paths": "off",
     },
