@@ -38,11 +38,20 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  // route.ts/actions.tsは合成ルート(domainのユースケース関数に、infraの実装(例: drizzleCustomerRepository)を
-  // 引数として渡して呼び出す場所)として、infraの直接importを許可する。
-  // Phase2でRepositoryパターン+DIを導入したことで、ここが「domainとinfraをつなぐ唯一の場所」という正式な役割になった。
+  // Phase1: Route Handler(route.ts)は合成ルート(domainのロジックとinfraの実装を繋ぐ場所)として
+  // 一時的にinfraの直接importを許可する。Repositoryパターン+DIによる正式な抽象化はPhase2で導入する。
   {
-    files: ["src/app/**/route.ts", "src/app/**/actions.ts"],
+    files: ["src/app/**/route.ts"],
+    rules: {
+      "import/no-restricted-paths": "off",
+    },
+  },
+  // Phase2: Data Access Layer(DAL)。domainのユースケース関数に、infraの実装(例: drizzleCustomerRepository)を
+  // 引数として渡して束縛(bind)する、唯一の場所。Next.js公式ドキュメント(data-security.md, authentication.md)が
+  // 新規プロジェクト向けに推奨するパターン。actions.ts・page.tsx・route.tsは、infraを直接importせず、
+  // 必ずこのDAL経由でdomainのユースケースを呼ぶ。
+  {
+    files: ["src/app/lib/**/*.ts"],
     rules: {
       "import/no-restricted-paths": "off",
     },
