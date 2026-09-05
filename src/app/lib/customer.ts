@@ -1,5 +1,7 @@
 import "server-only";
 
+// DAL
+
 import type { CustomerId } from "@/domain/shared/branded";
 import * as customerService from "@/domain/customer/customerService";
 import { drizzleCustomerRepository } from "@/infra/db/customerRepository";
