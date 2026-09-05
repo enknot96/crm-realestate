@@ -3,24 +3,27 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* realestate-aiagent(みらい不動産サイト)のロゴから採取したブランドカラーを踏襲 */
+  --brand-navy: #163a5c;
+  --brand-teal: #0f6e8c;
+  --brand-mint: #6fd08c;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-zen-kaku-gothic-new);
+
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-teal: var(--brand-teal);
+  --color-brand-mint: var(--brand-mint);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* realestate-aiagent側もライトテーマ固定のため、こちらも合わせる */
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
