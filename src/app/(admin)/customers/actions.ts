@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 
 // 流れ：actions.ts → DAL → customerService.ts → customerRepository.ts
 
-type CustomerFormActionState = CustomerServiceError | null;
+export type CustomerFormActionState = CustomerServiceError | null;
 type RemoveActionState = { message: string } | null;
 
 export async function createCustomerAction(
