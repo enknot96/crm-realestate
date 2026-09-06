@@ -6,10 +6,10 @@ const PAGE_SIZE = 20;
 export default async function CustomersPage(props: PageProps<"/customers">) {
   const searchParams = await props.searchParams;
 
-  // 「ブラウザが/customers?q=田中&page=2へGETでアクセスする
+  // ブラウザが/customers?q=田中&page=2へGETでアクセスする
   // → Next.jsがそのURLを解析してprops.searchParamsという箱にすでに詰めて渡してくる
   // → awaitでその中身を取り出す」
-  const query = searchParams.q;
+  const query = typeof searchParams.q === "string" ? searchParams.q : undefined;
   const page = searchParams.page ? Number(searchParams.page) : 1;
 
   const result = await listPages({ query, page, pageSize: PAGE_SIZE });
@@ -53,13 +53,27 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
           </tr>
         </thead>
         <tbody>
-          {/* items を map して、各顧客の行(name, phone, 編集/削除へのリンク)を表示する */}
+          {items.map((customer) => (
+            <tr
+              key={customer.id}
+              className="border-b border-gray-100"
+            >
+              <td className="py-2">{customer.name}</td>
+              <td className="py-2">{customer.phone}</td>
+              <td className="py-2">
+                <Link href={`/customers/${customer.id}/edit`}>編集</Link>
+                <Link href={`/customers/${customer.id}/delete`}>削除</Link>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
 
       <div className="mt-4 flex items-center justify-center gap-4 text-sm">
-        {/* page > 1 なら「前へ」リンク、page < totalPages なら「次へ」リンクを表示する
-            リンク先は /customers?q=${query}&page=${page - 1} のような形 */}
+        {page > 1 && <Link href={`/customers?q=${query ?? ""}&page=${page - 1}`}>前へ</Link>}{" "}
+        {page < totalPages && (
+          <Link href={`/customers?q=${query ?? ""}&page=${page + 1}`}>次へ</Link>
+        )}
       </div>
     </div>
   );
