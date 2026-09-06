@@ -27,7 +27,9 @@ export async function proxy(request: NextRequest) {
 
 // proxy関数をどのパスに対して実行するか を指定する設定
 export const config = {
-  // /login・/api/*・Next.js の静的アセット・画像最適化・favicon 以外の、
-  // すべてのパス に対してだけ proxy（＝ログインチェック）を実行する、という指定
-  matcher: ["/((?!login|api|_next/static|_next/image|favicon.ico).*)"],
+  // /login・/api/*・Next.js の静的アセット・画像最適化・拡張子を持つパス（画像・ファビコンなど、
+  // public/配下の静的ファイル全般）以外の、すべてのパス に対してだけ proxy（＝ログインチェック）を実行する、という指定
+  // ("logo-full.png"のようなpublic/配下のファイルを追加するたびに1つずつ除外を書き足す必要が無いよう、
+  //  拡張子を持つパス自体をまとめて除外している)
+  matcher: ["/((?!login|api|_next/static|_next/image|.*\\..*).*)"],
 };
