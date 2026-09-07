@@ -5,7 +5,7 @@ import { CustomerId } from "@/domain/shared/branded";
 import { CustomerFormActionState } from "../actions";
 import { useActionState } from "react";
 
-type Props = {
+export type Props = {
   action: (
     prevState: CustomerFormActionState,
     formData: FormData,
@@ -29,10 +29,16 @@ export function CustomerForm(props: Props) {
   const errorClassName = "mt-1 text-sm text-red-600";
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form
+      action={formAction}
+      className="space-y-4"
+    >
       {/* 名前 */}
       <div>
-        <label htmlFor="name" className={labelClassName}>
+        <label
+          htmlFor="name"
+          className={labelClassName}
+        >
           名前
         </label>
         <input
@@ -46,7 +52,10 @@ export function CustomerForm(props: Props) {
       </div>
       {/* 電話番号 */}
       <div>
-        <label htmlFor="phone" className={labelClassName}>
+        <label
+          htmlFor="phone"
+          className={labelClassName}
+        >
           電話番号
         </label>
         <input
@@ -60,7 +69,10 @@ export function CustomerForm(props: Props) {
       </div>
       {/* メール */}
       <div>
-        <label htmlFor="email" className={labelClassName}>
+        <label
+          htmlFor="email"
+          className={labelClassName}
+        >
           メール
         </label>
         <input
@@ -74,7 +86,10 @@ export function CustomerForm(props: Props) {
       </div>
       {/* 郵便番号 */}
       <div>
-        <label htmlFor="postalCode" className={labelClassName}>
+        <label
+          htmlFor="postalCode"
+          className={labelClassName}
+        >
           郵便番号
         </label>
         <input
@@ -85,13 +100,14 @@ export function CustomerForm(props: Props) {
           defaultValue={props.defaultValues?.["postalCode"]}
           className={inputClassName}
         />
-        {fieldError("postalCode") && (
-          <p className={errorClassName}>{fieldError("postalCode")}</p>
-        )}
+        {fieldError("postalCode") && <p className={errorClassName}>{fieldError("postalCode")}</p>}
       </div>
       {/* 住所 */}
       <div>
-        <label htmlFor="address" className={labelClassName}>
+        <label
+          htmlFor="address"
+          className={labelClassName}
+        >
           住所
         </label>
         <input
@@ -105,7 +121,10 @@ export function CustomerForm(props: Props) {
       </div>
       {/* メモ */}
       <div>
-        <label htmlFor="memo" className={labelClassName}>
+        <label
+          htmlFor="memo"
+          className={labelClassName}
+        >
           メモ
         </label>
         <textarea
@@ -119,7 +138,13 @@ export function CustomerForm(props: Props) {
       </div>
 
       {/* id情報を送るためのinpt */}
-      {props.id && <input type="hidden" name="id" value={props.id} />}
+      {props.id && (
+        <input
+          type="hidden"
+          name="id"
+          value={props.id}
+        />
+      )}
 
       <button
         type="submit"
