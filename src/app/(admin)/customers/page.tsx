@@ -23,58 +23,82 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-lg font-bold">顧客一覧</h1>
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">顧客一覧</h1>
         <Link
           href="/customers/new"
-          className="rounded-lg bg-brand-teal px-4 py-2 text-sm text-white"
+          className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy"
         >
           新規登録
         </Link>
       </div>
 
-      <form className="mb-4">
+      <form className="rounded-lg border border-gray-200 bg-white p-3">
         <input
           type="text"
           name="q"
           defaultValue={query}
           placeholder="名前で検索"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded border border-gray-300 p-2"
         />
       </form>
 
-      <table className="w-full border-collapse text-sm">
+      <table className="w-full border-collapse rounded-lg border border-gray-200 bg-white text-sm">
         <thead>
           <tr className="border-b border-gray-200 text-left text-gray-500">
-            <th className="py-2">名前</th>
-            <th className="py-2">電話番号</th>
-            <th className="py-2"></th>
+            <th className="p-3">名前</th>
+            <th className="p-3">電話番号</th>
+            <th className="p-3"></th>
           </tr>
         </thead>
         <tbody>
           {items.map((customer) => (
             <tr
               key={customer.id}
-              className="border-b border-gray-100"
+              className="border-b border-gray-100 last:border-0"
             >
-              <td className="py-2">{customer.name}</td>
-              <td className="py-2">{customer.phone}</td>
-              <td className="py-2">
-                <Link href={`/customers/${customer.id}/edit`}>編集</Link>
-                <Link href={`/customers/${customer.id}/delete`}>削除</Link>
+              <td className="p-3">{customer.name}</td>
+              <td className="p-3">{customer.phone}</td>
+              <td className="p-3">
+                <div className="flex items-center gap-4 font-bold">
+                  <Link
+                    href={`/customers/${customer.id}/edit`}
+                    className="text-brand-teal hover:text-brand-navy"
+                  >
+                    編集
+                  </Link>
+                  <Link
+                    href={`/customers/${customer.id}/delete`}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    削除
+                  </Link>
+                </div>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <div className="mt-4 flex items-center justify-center gap-4 text-sm">
-        {page > 1 && <Link href={`/customers?q=${query ?? ""}&page=${page - 1}`}>前へ</Link>}{" "}
+      <div className="flex items-center justify-center gap-6 text-sm">
+        {page > 1 && (
+          <Link
+            href={`/customers?q=${query ?? ""}&page=${page - 1}`}
+            className="font-bold text-brand-teal hover:text-brand-navy"
+          >
+            前へ
+          </Link>
+        )}
         {page < totalPages && (
-          <Link href={`/customers?q=${query ?? ""}&page=${page + 1}`}>次へ</Link>
+          <Link
+            href={`/customers?q=${query ?? ""}&page=${page + 1}`}
+            className="font-bold text-brand-teal hover:text-brand-navy"
+          >
+            次へ
+          </Link>
         )}
       </div>
-    </div>
+    </main>
   );
 }

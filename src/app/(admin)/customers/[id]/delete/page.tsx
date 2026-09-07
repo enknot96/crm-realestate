@@ -16,15 +16,19 @@ export default async function DeleteCustomerPage(props: PageProps<"/customers/[i
   const customer = result.value;
 
   return (
-    <div>
-      <h1>本当に削除しますか？</h1>
-      <p>
-        {customer.name} / {customer.phone}
-      </p>
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
+      <h1 className="text-xl font-bold">本当に削除しますか？</h1>
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <p className="font-bold">{customer.name}</p>
+        <p className="text-gray-500">{customer.phone}</p>
+      </div>
 
-      <DeleteConfirmForm id={customer.id} />
-
-      <Link href="/customers">キャンセルして一覧へ</Link>
-    </div>
+      <div className="flex items-center gap-4">
+        <DeleteConfirmForm id={customer.id} />
+        <Link href="/customers" className="font-bold text-brand-teal hover:text-brand-navy">
+          キャンセルして一覧へ
+        </Link>
+      </div>
+    </main>
   );
 }

@@ -12,16 +12,12 @@ export function DeleteConfirmForm(props: Props) {
   const [state, formAction] = useActionState(removeCustomerAction, null);
 
   return (
-    <form action={formAction}>
-      <input
-        type="hidden"
-        name="id"
-        value={props.id}
-      />
-      {state?.message && <p className="mt-1 text-sm text-red-600">{state.message}</p>}
+    <form action={formAction} className="flex flex-col gap-2">
+      <input type="hidden" name="id" value={props.id} />
+      {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
       <button
         type="submit"
-        className="rounded-lg bg-red-600 px-4 py-2 text-sm text-white"
+        className="cursor-pointer rounded-lg bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-700"
       >
         削除する
       </button>

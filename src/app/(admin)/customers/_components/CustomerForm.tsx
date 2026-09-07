@@ -24,132 +24,90 @@ export function CustomerForm(props: Props) {
     return undefined;
   };
 
-  const inputClassName = "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm";
-  const labelClassName = "mb-1 block text-sm font-medium text-gray-700";
-  const errorClassName = "mt-1 text-sm text-red-600";
+  const inputClassName = "rounded border border-gray-300 p-2";
+  const labelClassName = "flex flex-col gap-1";
+  const labelTextClassName = "font-bold text-gray-700";
+  const errorClassName = "text-sm text-red-600";
 
   return (
-    <form
-      action={formAction}
-      className="space-y-4"
-    >
+    <form action={formAction} className="flex flex-col gap-4">
       {/* 名前 */}
-      <div>
-        <label
-          htmlFor="name"
-          className={labelClassName}
-        >
-          名前
-        </label>
+      <label className={labelClassName}>
+        <span className={labelTextClassName}>名前</span>
         <input
-          id="name"
           name="name"
           type="text"
           defaultValue={props.defaultValues?.["name"]}
           className={inputClassName}
         />
-        {fieldError("name") && <p className={errorClassName}>{fieldError("name")}</p>}
-      </div>
+        {fieldError("name") && <span className={errorClassName}>{fieldError("name")}</span>}
+      </label>
       {/* 電話番号 */}
-      <div>
-        <label
-          htmlFor="phone"
-          className={labelClassName}
-        >
-          電話番号
-        </label>
+      <label className={labelClassName}>
+        <span className={labelTextClassName}>電話番号</span>
         <input
-          id="phone"
           name="phone"
           type="tel"
           defaultValue={props.defaultValues?.["phone"]}
           className={inputClassName}
         />
-        {fieldError("phone") && <p className={errorClassName}>{fieldError("phone")}</p>}
-      </div>
+        {fieldError("phone") && <span className={errorClassName}>{fieldError("phone")}</span>}
+      </label>
       {/* メール */}
-      <div>
-        <label
-          htmlFor="email"
-          className={labelClassName}
-        >
-          メール
-        </label>
+      <label className={labelClassName}>
+        <span className={labelTextClassName}>メール</span>
         <input
-          id="email"
           name="email"
           type="email"
           defaultValue={props.defaultValues?.["email"]}
           className={inputClassName}
         />
-        {fieldError("email") && <p className={errorClassName}>{fieldError("email")}</p>}
-      </div>
+        {fieldError("email") && <span className={errorClassName}>{fieldError("email")}</span>}
+      </label>
       {/* 郵便番号 */}
-      <div>
-        <label
-          htmlFor="postalCode"
-          className={labelClassName}
-        >
-          郵便番号
-        </label>
+      <label className={labelClassName}>
+        <span className={labelTextClassName}>郵便番号</span>
         <input
-          id="postalCode"
           name="postalCode"
           type="text"
           inputMode="numeric"
           defaultValue={props.defaultValues?.["postalCode"]}
           className={inputClassName}
         />
-        {fieldError("postalCode") && <p className={errorClassName}>{fieldError("postalCode")}</p>}
-      </div>
+        {fieldError("postalCode") && (
+          <span className={errorClassName}>{fieldError("postalCode")}</span>
+        )}
+      </label>
       {/* 住所 */}
-      <div>
-        <label
-          htmlFor="address"
-          className={labelClassName}
-        >
-          住所
-        </label>
+      <label className={labelClassName}>
+        <span className={labelTextClassName}>住所</span>
         <input
-          id="address"
           name="address"
           type="text"
           defaultValue={props.defaultValues?.["address"]}
           className={inputClassName}
         />
-        {fieldError("address") && <p className={errorClassName}>{fieldError("address")}</p>}
-      </div>
+        {fieldError("address") && <span className={errorClassName}>{fieldError("address")}</span>}
+      </label>
       {/* メモ */}
-      <div>
-        <label
-          htmlFor="memo"
-          className={labelClassName}
-        >
-          メモ
-        </label>
+      <label className={labelClassName}>
+        <span className={labelTextClassName}>メモ</span>
         <textarea
-          id="memo"
           name="memo"
-          rows={3}
+          rows={4}
           defaultValue={props.defaultValues?.["memo"]}
           className={inputClassName}
         />
-        {fieldError("memo") && <p className={errorClassName}>{fieldError("memo")}</p>}
-      </div>
+        {fieldError("memo") && <span className={errorClassName}>{fieldError("memo")}</span>}
+      </label>
 
       {/* id情報を送るためのinpt */}
-      {props.id && (
-        <input
-          type="hidden"
-          name="id"
-          value={props.id}
-        />
-      )}
+      {props.id && <input type="hidden" name="id" value={props.id} />}
 
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-lg bg-brand-teal px-4 py-2 text-sm text-white disabled:opacity-50"
+        className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
       >
         {props.id ? "更新する" : "新規作成する"}
       </button>
