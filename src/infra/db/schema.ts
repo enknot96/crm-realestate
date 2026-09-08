@@ -25,6 +25,7 @@ export const customers = pgTable("customers", {
   postalCode: text("postal_code"),
   address: text("address"),
   lineUserId: text("line_user_id")
+    .unique() // この列の値は重複してはいけない
     // 存在しない相手(line_friends.lineUserId)を参照しようとしたら、そもそも保存できない
     .references(() => lineFriends.lineUserId) // references書いた側が子
     .$type<LineUserId>(),
