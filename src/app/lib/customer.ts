@@ -2,7 +2,7 @@ import "server-only";
 
 // DAL
 
-import type { CustomerId } from "@/domain/shared/branded";
+import type { CustomerId, LineUserId } from "@/domain/shared/branded";
 import * as customerService from "@/domain/customer/customerService";
 import { drizzleCustomerRepository } from "@/infra/db/customerRepository";
 
@@ -20,3 +20,6 @@ export const removeCustomer = (id: CustomerId) =>
 
 export const listPages = (params: { query?: string; page: number; pageSize: number }) =>
   customerService.listPages(drizzleCustomerRepository, params);
+
+export const linkLineFriend = (id: CustomerId, lineUserId: LineUserId) =>
+  customerService.linkLineFriend(drizzleCustomerRepository, id, lineUserId);

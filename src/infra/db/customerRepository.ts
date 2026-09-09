@@ -59,4 +59,19 @@ export const drizzleCustomerRepository: CustomerRepository = {
       return { items: rows, totalCount: totalRows[0]?.values ?? 0 };
     }, "ページ情報の取得に失敗しました");
   },
+  // 引数のid = どの顧客を更新したいか、呼び出し元から渡されてくる値
+  linkLineFriend: (id, lineUserId) => {
+    return fromPromise(async () => {
+      const rows = await db
+        .update(customers)
+        .set({ lineUserId })
+        .where(eq(customers.id, id))
+        .returning();
+      if (rows[0] === undefined) {
+        throw new Error("行の更新に失敗しました");
+      } else {
+        return rows[0];
+      }
+    }, "顧客情報とLine IDの紐づけに失敗しました");
+  },
 };
