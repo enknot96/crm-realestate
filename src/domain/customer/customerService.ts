@@ -1,7 +1,7 @@
 // actions.tsから「バリデーション前の生のフォームデータ」を受け取り、
 // schema.tsのcustomerFormSchemaで検証してからrepositoryを呼ぶ、という役割
 import { z } from "zod";
-import { CustomerId } from "../shared/branded";
+import { CustomerId, LineUserId } from "../shared/branded";
 import { Customer, CustomerRepository } from "./repository";
 import { customerFormSchema } from "./schema";
 import { err, Result } from "../shared/result";
@@ -73,4 +73,12 @@ export async function listPages(
   },
 ) {
   return repo.list(params);
+}
+
+export async function linkLineFriend(
+  repo: CustomerRepository,
+  id: CustomerId,
+  lineUserId: LineUserId,
+) {
+  return repo.linkLineFriend(id, lineUserId);
 }
