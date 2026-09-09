@@ -5,7 +5,7 @@ import { integer, pgTable, primaryKey, serial, text, timestamp, uuid } from "dri
 // 第一引数 lineFriends = テーブル名
 export const lineFriends = pgTable("line_friends", {
   // lineFriends.lineUserId のように書き、TS側でアクセスする
-  lineUserId: text("line_user_id").primaryKey(),
+  lineUserId: text("line_user_id").primaryKey().$type<LineUserId>(),
   displayName: text("display_name").notNull(),
   followedAt: timestamp("followed_at", { withTimezone: true }).notNull(),
   blockedAt: timestamp("blocked_at", { withTimezone: true }),
