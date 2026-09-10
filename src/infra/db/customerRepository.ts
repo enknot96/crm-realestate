@@ -74,4 +74,9 @@ export const drizzleCustomerRepository: CustomerRepository = {
       }
     }, "顧客情報とLine IDの紐づけに失敗しました");
   },
+  listAllForSelect: () => {
+    return fromPromise(async () => {
+      return db.select({ id: customers.id, name: customers.name }).from(customers);
+    }, "顧客一覧の取得に失敗しました");
+  },
 };

@@ -82,3 +82,7 @@ export async function linkLineFriend(
 ) {
   return repo.linkLineFriend(id, lineUserId);
 }
+
+export async function listAllForSelect(repo: CustomerRepository) {
+  return repo.listAllForSelect();
+}

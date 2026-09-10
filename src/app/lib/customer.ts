@@ -23,3 +23,5 @@ export const listPages = (params: { query?: string; page: number; pageSize: numb
 
 export const linkLineFriend = (id: CustomerId, lineUserId: LineUserId) =>
   customerService.linkLineFriend(drizzleCustomerRepository, id, lineUserId);
+
+export const listAllForSelect = () => customerService.listAllForSelect(drizzleCustomerRepository);
