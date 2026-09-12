@@ -1,4 +1,4 @@
-import { CustomerId, LineUserId } from "../shared/branded";
+import { CustomerId, LineUserId, TagId } from "../shared/branded";
 import { Result } from "../shared/result";
 import { CustomerFormInput } from "./schema";
 
@@ -36,4 +36,8 @@ export interface CustomerRepository {
   // 「未紐付けLINE友だち一覧」画面の中で使う<select>（プルダウン）用のデータを取得する関数
   listAllForSelect(): Promise<Result<{ id: CustomerId; name: string }[], string>>;
   markContacted(id: CustomerId): Promise<Result<Customer, string>>;
+  // この顧客に現在付いているタグのID一覧（編集画面のチェックボックス初期値用）
+  getTagIds(id: CustomerId): Promise<Result<TagId[], string>>;
+  // この顧客のタグ付与状況を、渡されたtagIdsの内容で丸ごと置き換える
+  setTags(id: CustomerId, tagIds: TagId[]): Promise<Result<void, string>>;
 }

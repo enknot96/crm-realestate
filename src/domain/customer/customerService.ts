@@ -1,7 +1,7 @@
 // actions.tsから「バリデーション前の生のフォームデータ」を受け取り、
 // schema.tsのcustomerFormSchemaで検証してからrepositoryを呼ぶ、という役割
 import { z } from "zod";
-import { CustomerId, LineUserId } from "../shared/branded";
+import { CustomerId, LineUserId, TagId } from "../shared/branded";
 import { Customer, CustomerRepository } from "./repository";
 import { customerFormSchema } from "./schema";
 import { err, Result } from "../shared/result";
@@ -90,4 +90,12 @@ export async function listAllForSelect(repo: CustomerRepository) {
 
 export async function markContacted(repo: CustomerRepository, id: CustomerId) {
   return repo.markContacted(id);
+}
+
+export async function getTagIds(repo: CustomerRepository, id: CustomerId) {
+  return repo.getTagIds(id);
+}
+
+export async function setTags(repo: CustomerRepository, id: CustomerId, tagIds: TagId[]) {
+  return repo.setTags(id, tagIds);
 }
