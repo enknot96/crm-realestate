@@ -61,7 +61,7 @@ export async function markContactedAction(id: CustomerId, formData: FormData) {
   revalidatePath("/customers");
 }
 
-type SetTagsActionState = { message: string } | null;
+type SetTagsActionState = { kind: "success" } | { kind: "error"; message: string } | null;
 
 export async function setTagsAction(
   prevState: SetTagsActionState,
@@ -72,8 +72,8 @@ export async function setTagsAction(
   const tagIds = formData.getAll("tagIds").map((value) => Number(value) as TagId);
   const result = await setTags(customerId as CustomerId, tagIds);
   if (result.kind === "err") {
-    return { message: result.error };
+    return { kind: "error", message: result.error };
   }
   revalidatePath(`/customers/${customerId}/edit`);
-  return null;
+  return { kind: "success" };
 }
