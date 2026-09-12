@@ -18,8 +18,12 @@ export const updateCustomer = (id: CustomerId, input: unknown) =>
 export const removeCustomer = (id: CustomerId) =>
   customerService.removeCustomer(drizzleCustomerRepository, id);
 
-export const listPages = (params: { query?: string; page: number; pageSize: number }) =>
-  customerService.listPages(drizzleCustomerRepository, params);
+export const listPages = (params: {
+  query?: string;
+  page: number;
+  pageSize: number;
+  sortOrder?: "asc" | "desc";
+}) => customerService.listPages(drizzleCustomerRepository, params);
 
 export const linkLineFriend = (id: CustomerId, lineUserId: LineUserId) =>
   customerService.linkLineFriend(drizzleCustomerRepository, id, lineUserId);

@@ -1,6 +1,6 @@
 import { CustomerRepository } from "@/domain/customer/repository";
 import { getDb } from "./client";
-import { count, eq } from "drizzle-orm";
+import { count, eq, sql } from "drizzle-orm";
 import { customers } from "./schema";
 import { fromPromise } from "@/domain/shared/result";
 
@@ -49,9 +49,19 @@ export const drizzleCustomerRepository: CustomerRepository = {
   list: (params) => {
     return fromPromise(async () => {
       const offset = (params.page - 1) * params.pageSize;
+      // params.sortOrderが"desc"なら「DESC NULLS LAST」、それ以外（デフォルト）なら「ASC NULLS FIRST」
+      const orderByClause =
+        params.sortOrder === "desc"
+          ? sql`${customers.lastContactedAt} DESC NULLS LAST`
+          : sql`${customers.lastContactedAt} ASC NULLS FIRST`;
       // limit(...) = 最大...件しか返さないでください という指定（上限）
       // offset(20)→先頭から20件を読み飛ばす / limit(20)→そこから最大20件だけ取得する
-      const rows = await db.select().from(customers).limit(params.pageSize).offset(offset);
+      const rows = await db
+        .select()
+        .from(customers)
+        .orderBy(orderByClause)
+        .limit(params.pageSize)
+        .offset(offset);
       // 一覧画面には「全50件中、21〜40件目を表示中」「次へボタンを押せるか」を表示したい
       // そのため、「絞り込み条件に該当する、全体の件数」を別途知る必要があります
       const totalRows = await db.select({ values: count() }).from(customers);

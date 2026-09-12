@@ -29,6 +29,7 @@ export interface CustomerRepository {
     query?: string;
     page: number;
     pageSize: number; // 1ページに何件表示するか
+    sortOrder?: "asc" | "desc";
   }): Promise<Result<{ items: Customer[]; totalCount: number }, string>>;
   // 未紐付けの友だちを実際に紐付ける
   linkLineFriend(id: CustomerId, lineUserId: LineUserId): Promise<Result<Customer, string>>;

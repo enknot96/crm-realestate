@@ -70,6 +70,7 @@ export async function listPages(
     query?: string;
     page: number;
     pageSize: number;
+    sortOrder?: "asc" | "desc";
   },
 ) {
   return repo.list(params);
