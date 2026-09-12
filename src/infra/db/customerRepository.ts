@@ -1,7 +1,7 @@
 import { CustomerRepository } from "@/domain/customer/repository";
 import { getDb } from "./client";
 import { count, eq, sql } from "drizzle-orm";
-import { customers } from "./schema";
+import { customers, customerTags } from "./schema";
 import { fromPromise } from "@/domain/shared/result";
 
 const db = getDb();
@@ -103,5 +103,24 @@ export const drizzleCustomerRepository: CustomerRepository = {
         return rows[0];
       }
     }, "接触記録の更新に失敗しました");
+  },
+  getTagIds: (id) => {
+    return fromPromise(async () => {
+      const rows = await db
+        .select({ tagId: customerTags.tagId })
+        .from(customerTags)
+        .where(eq(customerTags.customerId, id));
+      return rows.map((row) => row.tagId);
+    }, "顧客のタグ取得に失敗しました");
+  },
+  // neon-httpドライバはトランザクションを未サポートのため、削除→挿入は別々のクエリになる
+  setTags: (id, tagIds) => {
+    return fromPromise(async () => {
+      await db.delete(customerTags).where(eq(customerTags.customerId, id));
+      if (tagIds.length > 0) {
+        await db.insert(customerTags).values(tagIds.map((tagId) => ({ customerId: id, tagId })));
+      }
+      return undefined;
+    }, "顧客のタグ更新に失敗しました");
   },
 };

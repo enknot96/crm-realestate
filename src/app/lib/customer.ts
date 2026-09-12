@@ -2,7 +2,7 @@ import "server-only";
 
 // DAL
 
-import type { CustomerId, LineUserId } from "@/domain/shared/branded";
+import type { CustomerId, LineUserId, TagId } from "@/domain/shared/branded";
 import * as customerService from "@/domain/customer/customerService";
 import { drizzleCustomerRepository } from "@/infra/db/customerRepository";
 
@@ -32,3 +32,9 @@ export const listAllForSelect = () => customerService.listAllForSelect(drizzleCu
 
 export const markContacted = (id: CustomerId) =>
   customerService.markContacted(drizzleCustomerRepository, id);
+
+export const getTagIds = (id: CustomerId) =>
+  customerService.getTagIds(drizzleCustomerRepository, id);
+
+export const setTags = (id: CustomerId, tagIds: TagId[]) =>
+  customerService.setTags(drizzleCustomerRepository, id, tagIds);
