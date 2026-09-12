@@ -1,12 +1,13 @@
 // ブラウザから直接呼べるようにする為だけに"use server"が必要
 "use server";
 
-import { createCustomer, removeCustomer, updateCustomer } from "@/app/lib/customer";
+import { createCustomer, markContacted, removeCustomer, updateCustomer } from "@/app/lib/customer";
 import { CustomerServiceError } from "@/domain/customer/customerService";
 import { CustomerId } from "@/domain/shared/branded";
 import { redirect } from "next/navigation";
 
 // 流れ：actions.ts → DAL → customerService.ts → customerRepository.ts
+// このファイルの役割：ブラウザからのフォーム送信を受け止めて、DALの関数を呼ぶだけの薄いラッパー
 
 export type CustomerFormActionState = CustomerServiceError | null;
 type RemoveActionState = { message: string } | null;
@@ -46,4 +47,8 @@ export async function removeCustomerAction(
     return { message: result.error };
   }
   redirect("/customers");
+}
+
+export async function markContactedAction(id: CustomerId, formData: FormData) {
+  await markContacted(id);
 }
