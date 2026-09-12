@@ -87,3 +87,7 @@ export async function linkLineFriend(
 export async function listAllForSelect(repo: CustomerRepository) {
   return repo.listAllForSelect();
 }
+
+export async function markContacted(repo: CustomerRepository, id: CustomerId) {
+  return repo.markContacted(id);
+}

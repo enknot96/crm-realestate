@@ -35,4 +35,5 @@ export interface CustomerRepository {
   linkLineFriend(id: CustomerId, lineUserId: LineUserId): Promise<Result<Customer, string>>;
   // 「未紐付けLINE友だち一覧」画面の中で使う<select>（プルダウン）用のデータを取得する関数
   listAllForSelect(): Promise<Result<{ id: CustomerId; name: string }[], string>>;
+  markContacted(id: CustomerId): Promise<Result<Customer, string>>;
 }

@@ -89,4 +89,19 @@ export const drizzleCustomerRepository: CustomerRepository = {
       return db.select({ id: customers.id, name: customers.name }).from(customers);
     }, "顧客一覧の取得に失敗しました");
   },
+  // 顧客idを引数にとり、顧客との接触日時を記録する
+  markContacted: (id) => {
+    return fromPromise(async () => {
+      const rows = await db
+        .update(customers)
+        .set({ lastContactedAt: new Date() })
+        .where(eq(customers.id, id))
+        .returning();
+      if (rows[0] === undefined) {
+        throw new Error("行の更新に失敗しました");
+      } else {
+        return rows[0];
+      }
+    }, "接触記録の更新に失敗しました");
+  },
 };

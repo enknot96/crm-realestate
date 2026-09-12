@@ -29,3 +29,6 @@ export const linkLineFriend = (id: CustomerId, lineUserId: LineUserId) =>
   customerService.linkLineFriend(drizzleCustomerRepository, id, lineUserId);
 
 export const listAllForSelect = () => customerService.listAllForSelect(drizzleCustomerRepository);
+
+export const markContacted = (id: CustomerId) =>
+  customerService.markContacted(drizzleCustomerRepository, id);
