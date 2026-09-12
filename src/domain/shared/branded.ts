@@ -27,6 +27,7 @@ export type CustomerId = Brand<string, "CustomerId">;
 export type LineUserId = Brand<string, "LineUserId">;
 export type PropertyId = Brand<string, "PropertyId">;
 export type ReportId = Brand<string, "ReportId">;
+export type TagId = Brand<number, "TagId">;
 
 // Bだけで区別はできる（"CustomerId" ≠ "LineUserId"など）
 // これはその通り
