@@ -32,3 +32,9 @@ export const listAllForSelect = () => customerService.listAllForSelect(drizzleCu
 
 export const markContacted = (id: CustomerId) =>
   customerService.markContacted(drizzleCustomerRepository, id);
+
+export const importCustomersFromCsv = (content: string) =>
+  customerService.importCustomersFromCsv(drizzleCustomerRepository, content);
+
+export const exportCustomersToCsv = () =>
+  customerService.exportCustomersToCsv(drizzleCustomerRepository);

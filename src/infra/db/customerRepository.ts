@@ -6,6 +6,18 @@ import { fromPromise } from "@/domain/shared/result";
 
 const db = getDb();
 
+// customers.phoneのUNIQUE制約（drizzleが自動生成した名前）に違反したかどうかを判定する
+// drizzleが投げるエラーは、code(SQLSTATE)・constraint(制約名)を持つ元のNeonDbErrorを
+// .causeとしてラップしているため、causeの方を見る必要がある
+const PHONE_UNIQUE_CONSTRAINT = "customers_phone_unique";
+
+function isPhoneUniqueViolation(e: unknown): boolean {
+  if (!(e instanceof Error)) return false;
+  const cause = e.cause instanceof Error ? e.cause : e;
+  const { code, constraint } = cause as Error & { code?: string; constraint?: string };
+  return code === "23505" && constraint === PHONE_UNIQUE_CONSTRAINT;
+}
+
 export const drizzleCustomerRepository: CustomerRepository = {
   findById: (id) => {
     // ヘルパー関数でラップする
@@ -18,23 +30,35 @@ export const drizzleCustomerRepository: CustomerRepository = {
   // 引数inputの型 = CustomerFormInputで定義している値が入っている
   create: (input) => {
     return fromPromise(async () => {
-      // returning() = 挿入した行を返す
-      const rows = await db.insert(customers).values(input).returning();
-      if (rows[0] === undefined) {
-        throw new Error("行の挿入に失敗しました"); // 想定内の以上
-      } else {
+      try {
+        // returning() = 挿入した行を返す
+        const rows = await db.insert(customers).values(input).returning();
+        if (rows[0] === undefined) {
+          throw new Error("行の挿入に失敗しました"); // 想定内の以上
+        }
         return rows[0];
+      } catch (e) {
+        if (isPhoneUniqueViolation(e)) {
+          throw new Error("この電話番号はすでに登録されています");
+        }
+        throw e;
       }
       // 万が一、Errorですらない何かが投げられた場合
     }, "顧客情報の登録に失敗しました"); // 想定外の異常のときの保険文言
   },
   update: (id, input) => {
     return fromPromise(async () => {
-      const rows = await db.update(customers).set(input).where(eq(customers.id, id)).returning();
-      if (rows[0] === undefined) {
-        throw new Error("行の更新に失敗しました");
-      } else {
+      try {
+        const rows = await db.update(customers).set(input).where(eq(customers.id, id)).returning();
+        if (rows[0] === undefined) {
+          throw new Error("行の更新に失敗しました");
+        }
         return rows[0];
+      } catch (e) {
+        if (isPhoneUniqueViolation(e)) {
+          throw new Error("この電話番号はすでに登録されています");
+        }
+        throw e;
       }
     }, "顧客情報の更新に失敗しました");
   },
@@ -103,5 +127,16 @@ export const drizzleCustomerRepository: CustomerRepository = {
         return rows[0];
       }
     }, "接触記録の更新に失敗しました");
+  },
+  listAll: () => {
+    return fromPromise(async () => {
+      return db.select().from(customers);
+    }, "顧客一覧の取得に失敗しました");
+  },
+  listAllPhones: () => {
+    return fromPromise(async () => {
+      const rows = await db.select({ phone: customers.phone }).from(customers);
+      return rows.map((row) => row.phone);
+    }, "電話番号一覧の取得に失敗しました");
   },
 };
