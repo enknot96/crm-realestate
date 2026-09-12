@@ -1,4 +1,4 @@
-import { CustomerId, LineUserId, PropertyId } from "@/domain/shared/branded";
+import { CustomerId, LineUserId, PropertyId, TagId } from "@/domain/shared/branded";
 import { integer, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 // 定数 lineFriends = TS側でこのテーブルを参照するときに使う名前
@@ -34,7 +34,7 @@ export const customers = pgTable("customers", {
 });
 
 export const tags = pgTable("tags", {
-  id: serial("id").primaryKey(),
+  id: serial("id").primaryKey().$type<TagId>(),
   name: text("name").notNull().unique(),
 });
 
@@ -51,7 +51,8 @@ export const customerTags = pgTable(
     // 単独では重複してOK
     tagId: integer("tag_id")
       .notNull()
-      .references(() => tags.id),
+      .references(() => tags.id)
+      .$type<TagId>(),
   },
   // 複合主キー = 例) 田中さんに『売主』タグを、うっかり2回付けてしまうという重複をDBが防ぐ
   // 田中さんのuuid + 売主のtag_id という組み合わせが1行しか存在できないことを定義
