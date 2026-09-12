@@ -33,6 +33,9 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">顧客一覧</h1>
         <div className="flex items-center gap-4">
+          <Link href="/tags" className="font-bold text-brand-teal hover:text-brand-navy">
+            タグ管理
+          </Link>
           <Link
             href="/customers/line-friends"
             className="font-bold text-brand-teal hover:text-brand-navy"
