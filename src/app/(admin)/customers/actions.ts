@@ -1,10 +1,17 @@
 // ブラウザから直接呼べるようにする為だけに"use server"が必要
 "use server";
 
-import { createCustomer, markContacted, removeCustomer, updateCustomer } from "@/app/lib/customer";
+import {
+  createCustomer,
+  markContacted,
+  removeCustomer,
+  setTags,
+  updateCustomer,
+} from "@/app/lib/customer";
 import { CustomerServiceError } from "@/domain/customer/customerService";
-import { CustomerId } from "@/domain/shared/branded";
+import { CustomerId, TagId } from "@/domain/shared/branded";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 // 流れ：actions.ts → DAL → customerService.ts → customerRepository.ts
 // このファイルの役割：ブラウザからのフォーム送信を受け止めて、DALの関数を呼ぶだけの薄いラッパー
@@ -51,4 +58,22 @@ export async function removeCustomerAction(
 
 export async function markContactedAction(id: CustomerId, formData: FormData) {
   await markContacted(id);
+  revalidatePath("/customers");
+}
+
+type SetTagsActionState = { message: string } | null;
+
+export async function setTagsAction(
+  prevState: SetTagsActionState,
+  formData: FormData,
+): Promise<SetTagsActionState> {
+  const customerId = formData.get("customerId");
+  // チェックボックスは同じname="tagIds"で複数チェックされうるので、getAll()で全部まとめて取り出す
+  const tagIds = formData.getAll("tagIds").map((value) => Number(value) as TagId);
+  const result = await setTags(customerId as CustomerId, tagIds);
+  if (result.kind === "err") {
+    return { message: result.error };
+  }
+  revalidatePath(`/customers/${customerId}/edit`);
+  return null;
 }

@@ -3,6 +3,7 @@
 import { createTag, removeTag } from "@/app/lib/tag";
 import { TagServiceError } from "@/domain/tag/tagService";
 import { TagId } from "@/domain/shared/branded";
+import { revalidatePath } from "next/cache";
 
 export type CreateTagActionState = TagServiceError | null;
 type RemoveTagActionState = { message: string } | null;
@@ -16,6 +17,7 @@ export async function createTagAction(
   if (result.kind === "err") {
     return result.error;
   }
+  revalidatePath("/tags");
   return null;
 }
 
@@ -28,5 +30,6 @@ export async function removeTagAction(
   if (result.kind === "err") {
     return { message: result.error };
   }
+  revalidatePath("/tags");
   return null;
 }
