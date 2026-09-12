@@ -36,4 +36,8 @@ export interface CustomerRepository {
   // 「未紐付けLINE友だち一覧」画面の中で使う<select>（プルダウン）用のデータを取得する関数
   listAllForSelect(): Promise<Result<{ id: CustomerId; name: string }[], string>>;
   markContacted(id: CustomerId): Promise<Result<Customer, string>>;
+  // CSVエクスポート用：ページングせず全件取得する
+  listAll(): Promise<Result<Customer[], string>>;
+  // CSVインポート時の重複チェック用：登録済みの電話番号一覧を取得する
+  listAllPhones(): Promise<Result<string[], string>>;
 }

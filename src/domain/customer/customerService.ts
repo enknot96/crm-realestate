@@ -4,7 +4,9 @@ import { z } from "zod";
 import { CustomerId, LineUserId } from "../shared/branded";
 import { Customer, CustomerRepository } from "./repository";
 import { customerFormSchema } from "./schema";
-import { err, Result } from "../shared/result";
+import { err, ok, Result } from "../shared/result";
+import { buildImportPlan, CsvRowError } from "./csvImport";
+import { customersToCsv } from "./csvExport";
 
 // ユーザーの入力が間違っている
 type ValidationError = { kind: "validation"; fieldErrors: Record<string, string[]> };
@@ -90,4 +92,47 @@ export async function listAllForSelect(repo: CustomerRepository) {
 
 export async function markContacted(repo: CustomerRepository, id: CustomerId) {
   return repo.markContacted(id);
+}
+
+export type CsvImportSummary = { successCount: number; errors: CsvRowError[] };
+
+export async function importCustomersFromCsv(
+  repo: CustomerRepository,
+  content: string,
+): Promise<Result<CsvImportSummary, string>> {
+  const phonesResult = await repo.listAllPhones();
+  if (phonesResult.kind === "err") {
+    return err(phonesResult.error);
+  }
+
+  const planResult = buildImportPlan(content, new Set(phonesResult.value));
+  if (planResult.kind === "err") {
+    return err(planResult.error);
+  }
+
+  const { toCreate, errors } = planResult.value;
+  let successCount = 0;
+
+  for (const { line, input } of toCreate) {
+    const result = await repo.create(input);
+    if (result.kind === "err") {
+      errors.push({ line, message: `${line}行目「${input.name}」の登録に失敗しました` });
+    } else {
+      successCount++;
+    }
+  }
+
+  errors.sort((a, b) => a.line - b.line);
+
+  return ok({ successCount, errors });
+}
+
+export async function exportCustomersToCsv(
+  repo: CustomerRepository,
+): Promise<Result<string, string>> {
+  const result = await repo.listAll();
+  if (result.kind === "err") {
+    return err(result.error);
+  }
+  return ok(customersToCsv(result.value));
 }

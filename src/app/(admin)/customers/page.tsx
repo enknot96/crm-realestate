@@ -40,6 +40,15 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
             LINEお友だちの紐付け
           </Link>
           <Link
+            href="/customers/import"
+            className="font-bold text-brand-teal hover:text-brand-navy"
+          >
+            CSV取り込み
+          </Link>
+          <a href="/customers/export" className="font-bold text-brand-teal hover:text-brand-navy">
+            CSVエクスポート
+          </a>
+          <Link
             href="/customers/new"
             className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy"
           >
