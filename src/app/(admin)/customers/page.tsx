@@ -26,12 +26,20 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">顧客一覧</h1>
-        <Link
-          href="/customers/new"
-          className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy"
-        >
-          新規登録
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/customers/line-friends"
+            className="font-bold text-brand-teal hover:text-brand-navy"
+          >
+            LINEお友だちの紐付け
+          </Link>
+          <Link
+            href="/customers/new"
+            className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy"
+          >
+            新規登録
+          </Link>
+        </div>
       </div>
 
       <form className="rounded-lg border border-gray-200 bg-white p-3">
