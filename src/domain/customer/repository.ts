@@ -40,4 +40,8 @@ export interface CustomerRepository {
   getTagIds(id: CustomerId): Promise<Result<TagId[], string>>;
   // この顧客のタグ付与状況を、渡されたtagIdsの内容で丸ごと置き換える
   setTags(id: CustomerId, tagIds: TagId[]): Promise<Result<void, string>>;
+  // CSVエクスポート用：ページングせず全件取得する
+  listAll(): Promise<Result<Customer[], string>>;
+  // CSVインポート時の重複チェック用：登録済みの電話番号一覧を取得する
+  listAllPhones(): Promise<Result<string[], string>>;
 }

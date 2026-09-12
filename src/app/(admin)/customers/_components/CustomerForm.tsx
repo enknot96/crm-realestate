@@ -31,6 +31,7 @@ export function CustomerForm(props: Props) {
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      {state?.kind === "repository" && <p className={errorClassName}>{state.message}</p>}
       {/* 名前 */}
       <label className={labelClassName}>
         <span className={labelTextClassName}>名前</span>

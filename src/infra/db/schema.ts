@@ -19,7 +19,7 @@ export const lineWebhookEvents = pgTable("line_webhook_events", {
 export const customers = pgTable("customers", {
   id: uuid("id").primaryKey().defaultRandom().$type<CustomerId>(),
   name: text("name").notNull(),
-  phone: text("phone").notNull(),
+  phone: text("phone").notNull().unique(),
   email: text("email"),
   memo: text("memo"),
   postalCode: text("postal_code"),

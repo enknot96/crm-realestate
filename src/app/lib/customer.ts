@@ -38,3 +38,9 @@ export const getTagIds = (id: CustomerId) =>
 
 export const setTags = (id: CustomerId, tagIds: TagId[]) =>
   customerService.setTags(drizzleCustomerRepository, id, tagIds);
+
+export const importCustomersFromCsv = (content: string) =>
+  customerService.importCustomersFromCsv(drizzleCustomerRepository, content);
+
+export const exportCustomersToCsv = () =>
+  customerService.exportCustomersToCsv(drizzleCustomerRepository);
