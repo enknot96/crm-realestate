@@ -57,6 +57,7 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
           <tr className="border-b border-gray-200 text-left text-gray-500">
             <th className="p-3">名前</th>
             <th className="p-3">電話番号</th>
+            <th className="p-3">LINE</th>
             <th className="p-3"></th>
           </tr>
         </thead>
@@ -68,6 +69,15 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
             >
               <td className="p-3">{customer.name}</td>
               <td className="p-3">{customer.phone}</td>
+              <td className="p-3">
+                {customer.lineUserId ? (
+                  <span className="rounded-full bg-brand-mint/20 px-2 py-0.5 text-xs font-bold text-brand-navy">
+                    連携済み
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-400">未連携</span>
+                )}
+              </td>
               <td className="p-3">
                 <div className="flex items-center gap-4 font-bold">
                   <Link
