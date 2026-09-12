@@ -30,7 +30,8 @@ export function CustomerTagsForm(props: Props) {
           </label>
         ))}
       </div>
-      {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
+      {state?.kind === "error" && <p className="text-sm text-red-600">{state.message}</p>}
+      {state?.kind === "success" && <p className="text-sm text-brand-teal">保存しました</p>}
       <button
         type="submit"
         disabled={isPending}
