@@ -65,4 +65,52 @@ describe("createFakeMessageSender", () => {
 
     expect(sender.sentMulticasts[0]?.userIds).toEqual(["U1", "U2"]);
   });
+
+  it("記録されたmessageを後から書き換えても、履歴には影響しない(防御的コピー)", async () => {
+    const sender = createFakeMessageSender();
+    const userIds = ["U1"] as LineUserId[];
+    const message = { kind: "text" as const, text: "こんにちは" };
+
+    await sender.sendMulticast(createDummyPermit(1), userIds, message);
+
+    // OutgoingMessageの型上はreadonlyだが、呼び出し元が持つ元の参照が実行時に
+    // 書き換えられても記録が汚染されないことを確認する(構造的コピーの検証)。
+    (message as { text: string }).text = "書き換え後";
+
+    expect(sender.sentMulticasts[0]?.message).toEqual({ kind: "text", text: "こんにちは" });
+  });
+
+  it("permitの予約件数(count)が宛先数に満たない場合はerrを返し、記録もされない(INV-1)", async () => {
+    const sender = createFakeMessageSender();
+    const userIds = ["U1", "U2", "U3"] as LineUserId[];
+
+    // reserve()で1件しか予約していないのに、3件へ送ろうとしている想定
+    const result = await sender.sendMulticast(createDummyPermit(1), userIds, {
+      kind: "text",
+      text: "こんにちは",
+    });
+
+    expect(result.kind).toBe("err");
+    if (result.kind === "err") {
+      expect(result.error).toEqual({
+        kind: "permitExceeded",
+        requestedCount: 3,
+        permittedCount: 1,
+      });
+    }
+    expect(sender.sentMulticasts).toHaveLength(0);
+  });
+
+  it("permitの予約件数がちょうど宛先数と一致する場合は送信される(境界値)", async () => {
+    const sender = createFakeMessageSender();
+    const userIds = ["U1", "U2"] as LineUserId[];
+
+    const result = await sender.sendMulticast(createDummyPermit(2), userIds, {
+      kind: "text",
+      text: "こんにちは",
+    });
+
+    expect(result.kind).toBe("ok");
+    expect(sender.sentMulticasts).toHaveLength(1);
+  });
 });
