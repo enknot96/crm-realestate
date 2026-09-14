@@ -23,6 +23,6 @@ export async function reserve(
   if (monthlyTotal > monthlyQuota) {
     return err({ kind: "exceeded", remainingMessages });
   } else {
-    return ok({ [guarded]: true, count: requestedCount });
+    return ok({ count: requestedCount } as SendPermit);
   }
 }
