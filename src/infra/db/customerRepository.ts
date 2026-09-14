@@ -1,6 +1,6 @@
 import { CustomerRepository } from "@/domain/customer/repository";
 import { getDb } from "./client";
-import { count, eq, sql } from "drizzle-orm";
+import { and, count, eq, isNotNull, sql } from "drizzle-orm";
 import { customers, customerTags } from "./schema";
 import { fromPromise } from "@/domain/shared/result";
 
@@ -157,5 +157,15 @@ export const drizzleCustomerRepository: CustomerRepository = {
       const rows = await db.select({ phone: customers.phone }).from(customers);
       return rows.map((row) => row.phone);
     }, "電話番号一覧の取得に失敗しました");
+  },
+  countSendableByTagId: (tagId) => {
+    return fromPromise(async () => {
+      const rows = await db
+        .select({ value: count() })
+        .from(customers)
+        .innerJoin(customerTags, eq(customers.id, customerTags.customerId))
+        .where(and(eq(customerTags.tagId, tagId), isNotNull(customers.lineUserId)));
+      return rows[0]?.value ?? 0;
+    }, "タグ配信対象人数の取得に失敗しました");
   },
 };
