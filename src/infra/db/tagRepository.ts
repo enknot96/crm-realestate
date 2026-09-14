@@ -12,6 +12,12 @@ export const drizzleTagRepository: TagRepository = {
       return db.select().from(tags);
     }, "タグ一覧の取得に失敗しました");
   },
+  findById: (id) => {
+    return fromPromise(async () => {
+      const rows = await db.select().from(tags).where(eq(tags.id, id));
+      return rows[0] ?? null;
+    }, "タグの取得に失敗しました");
+  },
   create: (name) => {
     return fromPromise(async () => {
       const rows = await db.insert(tags).values({ name }).returning();
