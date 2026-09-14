@@ -3,6 +3,7 @@ import { TagRepository } from "../tag/repository";
 import { CustomerRepository } from "../customer/repository";
 import { MessageLogRepository } from "./messageLogRepository";
 import { reserve } from "./quotaGuard";
+import { resolveTag } from "./resolveTag";
 import { sendBroadcastMessages, SendBroadcastError } from "./broadcastSender";
 import { err, Result } from "../shared/result";
 
@@ -32,14 +33,11 @@ export async function confirmBroadcast(
   now: Date,
   monthlyQuota: number,
 ): Promise<Result<{ sentCount: number }, ConfirmBroadcastError>> {
-  const tagsResult = await deps.tagRepo.list();
-  if (tagsResult.kind === "err") {
-    return err({ kind: "repository", message: tagsResult.error });
+  const tagResult = await resolveTag(deps.tagRepo, tagId);
+  if (tagResult.kind === "err") {
+    return err(tagResult.error);
   }
-  const tag = tagsResult.value.find((t) => t.id === tagId);
-  if (!tag) {
-    return err({ kind: "tagNotFound" });
-  }
+  const tag = tagResult.value;
 
   if (typedTagName.trim() !== tag.name) {
     return err({ kind: "tagNameMismatch" });

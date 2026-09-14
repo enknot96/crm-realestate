@@ -2,14 +2,19 @@ import { TagId } from "../shared/branded";
 import { TagRepository } from "../tag/repository";
 import { CustomerRepository } from "../customer/repository";
 import { MessageLogRepository } from "./messageLogRepository";
-import { reserve } from "./quotaGuard";
-import { getRemainingQuota } from "./quotaMeter";
+import { evaluateQuota } from "./quotaGuard";
+import { remainingFromCount } from "./quotaMeter";
+import { resolveTag } from "./resolveTag";
 import { err, ok, Result } from "../shared/result";
 
 export type BroadcastPreview = {
   tagId: TagId;
   tagName: string;
   recipientCount: number; // 実際にLINEが届く人数
+  // monthlyQuota / remainingBeforeSend は現時点ではモーダルに表示していない。
+  // message_logsの実DB実装が無く、値の元になっているMessageLogRepositoryがFakeのため
+  // （src/app/lib/messaging.tsのMESSAGE_LOG_TRACKING_READY参照）、断定的な数値を
+  // 追加で見せないための意図的な判断。実装が揃ったら表示を検討する。
   monthlyQuota: number;
   remainingBeforeSend: number; // 今、送信前の時点で残っている件数
   remainingAfterSend: number; // このまま送信した場合に残る件数
@@ -42,14 +47,11 @@ export async function previewBroadcast(
   now: Date,
   monthlyQuota: number,
 ): Promise<Result<BroadcastPreview, BroadcastPreviewError>> {
-  const tagsResult = await deps.tagRepo.list();
-  if (tagsResult.kind === "err") {
-    return err({ kind: "repository", message: tagsResult.error });
+  const tagResult = await resolveTag(deps.tagRepo, tagId);
+  if (tagResult.kind === "err") {
+    return err(tagResult.error);
   }
-  const tag = tagsResult.value.find((t) => t.id === tagId);
-  if (!tag) {
-    return err({ kind: "tagNotFound" });
-  }
+  const tag = tagResult.value;
 
   const recipientResult = await deps.customerRepo.countSendableByTagId(tagId);
   if (recipientResult.kind === "err") {
@@ -61,18 +63,20 @@ export async function previewBroadcast(
     return err({ kind: "noRecipient", tagName: tag.name });
   }
 
-  const remainingResult = await getRemainingQuota(deps.messageLogRepo, now, monthlyQuota);
-  if (remainingResult.kind === "err") {
-    return err({ kind: "repository", message: remainingResult.error });
+  // countThisMonthは1回だけ取得し、表示用の残数計算(remainingFromCount)と
+  // 送信可否の判定(evaluateQuota)の両方に同じ値を使う
+  // （別々に取得すると、2つの時点の値が混ざって表示と判定がズレうる）
+  const countResult = await deps.messageLogRepo.countThisMonth(now);
+  if (countResult.kind === "err") {
+    return err({ kind: "repository", message: countResult.error });
   }
-  const remainingBeforeSend = remainingResult.value;
+  const remainingBeforeSend = remainingFromCount(countResult.value, monthlyQuota);
 
-  // 実際に送信可能かどうかは、必ずQuotaGuardの判定に通す（画面側で独自に計算し直さない）
-  const permitResult = await reserve(deps.messageLogRepo, now, recipientCount, monthlyQuota);
-  if (permitResult.kind === "err") {
-    if (permitResult.error.kind === "repository") {
-      return err({ kind: "repository", message: permitResult.error.message });
-    }
+  // 実際に送信可能かどうかは、必ずQuotaGuardと同じ判定ロジックに通す（画面側で別ロジックを作らない）。
+  // プレビューは表示専用のためSendPermitは発行しない（INV-1: permitは実際に送る許可の証憑であり、
+  // 使わずに捨てるものではない）
+  const evaluation = evaluateQuota(countResult.value, recipientCount, monthlyQuota);
+  if (!evaluation.ok) {
     return err({
       kind: "quotaExceeded",
       tagName: tag.name,
