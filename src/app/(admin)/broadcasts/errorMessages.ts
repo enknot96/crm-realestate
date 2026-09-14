@@ -10,11 +10,13 @@ export function describePreviewError(error: BroadcastPreviewError): string {
     case "tagNotFound":
       return "指定されたタグが見つかりませんでした。もう一度選び直してください";
     case "noRecipient":
-      return `「${error.tagName}」のお客様がまだ登録されていないため、送信できません`;
+      return `「${error.tagName}」のお客様でLINEとつながっている方がいないため、送信できません。顧客一覧からLINEの友だちとひもづけてください`;
     case "quotaExceeded":
       return `「${error.tagName}」のお客様 ${error.recipientCount}名に送ろうとしていますが、今月あと${error.remainingBeforeSend}件しか送れません`;
     case "repository":
-      return error.message;
+      // DBドライバの生の例外文などが入りうるため、画面には出さずログにだけ残す(INV-8)
+      console.error("[broadcasts] previewの確認情報の取得に失敗:", error.message);
+      return "確認情報の取得に失敗しました。時間をおいてもう一度お試しください";
     default:
       return assertNever(error);
   }
@@ -29,9 +31,11 @@ export function describeConfirmError(error: ConfirmBroadcastError): string {
     case "quotaExceeded":
       return `今月あと${error.remainingMessages}件までしか送れません`;
     case "repository":
-      return error.message;
+      // DBドライバの生の例外文などが入りうるため、画面には出さずログにだけ残す(INV-8)
+      console.error("[broadcasts] 送信確認情報の取得に失敗:", error.message);
+      return "送信情報の確認に失敗しました。時間をおいてもう一度お試しください";
     case "notImplemented":
-      return error.message;
+      return "LINE送信機能は現在準備中です。しばらくしてからもう一度お試しください";
     default:
       return assertNever(error);
   }
