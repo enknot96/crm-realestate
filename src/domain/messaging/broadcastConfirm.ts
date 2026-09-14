@@ -8,7 +8,6 @@ import { sendBroadcastMessages, SendBroadcastError } from "./broadcastSender";
 import { err, Result } from "../shared/result";
 
 type TagNotFoundError = { kind: "tagNotFound" };
-// INV-4の「タグ名を手入力で再確認させる」摩擦。削ってはいけない仕様
 type TagNameMismatchError = { kind: "tagNameMismatch" };
 type QuotaExceededError = { kind: "quotaExceeded"; remainingMessages: number };
 type RepositoryError = { kind: "repository"; message: string };
@@ -19,9 +18,8 @@ export type ConfirmBroadcastError =
   | RepositoryError
   | SendBroadcastError;
 
-// 確認モーダルの「送信する」ボタンが押されたときの本体。
-// プレビュー時点から時間が経っている可能性があるため、対象人数・残り件数はここで必ず再計算する
-// （画面から渡された数値をそのまま信用しない）。
+// 確認モーダルの「送信する」ボタンが押されたときの本体（画面から渡された数値をそのまま信用しない）
+// プレビュー時点から時間が経っている可能性があるため、対象人数・残り件数はここで必ず再計算
 export async function confirmBroadcast(
   deps: {
     tagRepo: TagRepository;
@@ -48,12 +46,7 @@ export async function confirmBroadcast(
     return err({ kind: "repository", message: recipientResult.error });
   }
 
-  const permitResult = await reserve(
-    deps.messageLogRepo,
-    now,
-    recipientResult.value,
-    monthlyQuota,
-  );
+  const permitResult = await reserve(deps.messageLogRepo, now, recipientResult.value, monthlyQuota);
   if (permitResult.kind === "err") {
     if (permitResult.error.kind === "repository") {
       return err({ kind: "repository", message: permitResult.error.message });

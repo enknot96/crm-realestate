@@ -2,8 +2,6 @@ import { TagId } from "../shared/branded";
 import { SendPermit } from "./quotaGuard";
 import { err, Result } from "../shared/result";
 
-// kindだけを持つ。ユーザー向け文言はここでは持たない（INV-8: 画面文言はerrorMessages.ts側の
-// 責務。「タグID」のような内部識別子を含む文言をドメインが組み立てて画面まで素通りさせない）
 export type SendBroadcastError = { kind: "notImplemented" };
 
 // TODO(feature/quota-ui): 実際にLINEへ送信する MessageSender は、別のworktreeで並行実装中。
