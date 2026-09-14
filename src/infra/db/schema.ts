@@ -71,3 +71,9 @@ export const properties = pgTable("properties", {
   floors: integer("floors"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// QuotaGuardの通数カウントの根拠となるテーブル(最小限のカラムのみ)
+export const messageLogs = pgTable("message_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+});
