@@ -6,9 +6,6 @@ import { fromPromise } from "@/domain/shared/result";
 
 const db = getDb();
 
-// customers.phoneのUNIQUE制約（drizzleが自動生成した名前）に違反したかどうかを判定する
-// drizzleが投げるエラーは、code(SQLSTATE)・constraint(制約名)を持つ元のNeonDbErrorを
-// .causeとしてラップしているため、causeの方を見る必要がある
 const PHONE_UNIQUE_CONSTRAINT = "customers_phone_unique";
 
 function isPhoneUniqueViolation(e: unknown): boolean {
@@ -160,10 +157,8 @@ export const drizzleCustomerRepository: CustomerRepository = {
   },
   countSendableByTagId: (tagId) => {
     return fromPromise(async () => {
-      // lineFriendsとのinner joinにより、lineUserIdが無い顧客は自動的に除外される。
-      // さらにblockedAtがある(ブロック済み)友だちも除外する。ブロック済みにはLINEが
-      // 実際には届かないため、INV-4が求める「宛先の実数」に含めない
-      // (src/infra/db/lineFriendRepository.tsの未紐付け一覧と同じ方針)
+      // lineFriendsとのinner joinにより、lineUserIdが無い顧客は自動的に除外される
+      // blockedAtがある(ブロック済み)友だちも除外
       const rows = await db
         .select({ value: count() })
         .from(customers)
