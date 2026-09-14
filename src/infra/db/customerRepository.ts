@@ -1,7 +1,7 @@
 import { CustomerRepository } from "@/domain/customer/repository";
 import { getDb } from "./client";
-import { and, count, eq, isNotNull, sql } from "drizzle-orm";
-import { customers, customerTags } from "./schema";
+import { and, count, eq, isNull, sql } from "drizzle-orm";
+import { customers, customerTags, lineFriends } from "./schema";
 import { fromPromise } from "@/domain/shared/result";
 
 const db = getDb();
@@ -160,11 +160,16 @@ export const drizzleCustomerRepository: CustomerRepository = {
   },
   countSendableByTagId: (tagId) => {
     return fromPromise(async () => {
+      // lineFriendsとのinner joinにより、lineUserIdが無い顧客は自動的に除外される。
+      // さらにblockedAtがある(ブロック済み)友だちも除外する。ブロック済みにはLINEが
+      // 実際には届かないため、INV-4が求める「宛先の実数」に含めない
+      // (src/infra/db/lineFriendRepository.tsの未紐付け一覧と同じ方針)
       const rows = await db
         .select({ value: count() })
         .from(customers)
         .innerJoin(customerTags, eq(customers.id, customerTags.customerId))
-        .where(and(eq(customerTags.tagId, tagId), isNotNull(customers.lineUserId)));
+        .innerJoin(lineFriends, eq(customers.lineUserId, lineFriends.lineUserId))
+        .where(and(eq(customerTags.tagId, tagId), isNull(lineFriends.blockedAt)));
       return rows[0]?.value ?? 0;
     }, "タグ配信対象人数の取得に失敗しました");
   },

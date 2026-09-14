@@ -45,8 +45,9 @@ export interface CustomerRepository {
   // CSVインポート時の重複チェック用：登録済みの電話番号一覧を取得する
   listAllPhones(): Promise<Result<string[], string>>;
   // タグ配信の対象人数を数える：このタグが付いていて、かつLINE友だちと連携済み
-  // （lineUserIdがある = 実際にLINEメッセージを届けられる）の顧客数
-  // ブロック済みかどうかはここでは見ない（ブロックされていても送信自体は試みて、
-  // 失敗をmessage_logsに記録する設計のため。詳細はdocs/crm-realestate.md INV-1参照）
+  // （lineUserIdがある = 実際にLINEメッセージを届けられる）の顧客数。
+  // ブロック済みの友だちは、実際にはメッセージが届かないためここに含めない
+  // （src/infra/db/lineFriendRepository.tsの未紐付け一覧と同じ方針。
+  //  INV-4が求める「宛先の実数」を水増ししないため）
   countSendableByTagId(tagId: TagId): Promise<Result<number, string>>;
 }
