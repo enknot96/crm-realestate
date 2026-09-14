@@ -29,6 +29,13 @@ export function BroadcastForm(props: Props) {
     }
   }, [previewState]);
 
+  // 送信に成功したら、モーダルを閉じる（開いたまま残して二重送信できそうな見た目にしない）
+  useEffect(() => {
+    if (confirmState.kind === "success") {
+      dialogRef.current?.close();
+    }
+  }, [confirmState]);
+
   const canSend = preview !== null && typedTagName.trim() === preview.tagName;
 
   return (
