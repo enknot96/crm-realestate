@@ -2,7 +2,9 @@ import { TagId } from "../shared/branded";
 import { SendPermit } from "./quotaGuard";
 import { err, Result } from "../shared/result";
 
-export type SendBroadcastError = { kind: "notImplemented"; message: string };
+// kindだけを持つ。ユーザー向け文言はここでは持たない（INV-8: 画面文言はerrorMessages.ts側の
+// 責務。「タグID」のような内部識別子を含む文言をドメインが組み立てて画面まで素通りさせない）
+export type SendBroadcastError = { kind: "notImplemented" };
 
 // TODO(feature/quota-ui): 実際にLINEへ送信する MessageSender は、別のworktreeで並行実装中。
 // (仕様書 セクション3「アーキテクチャ」の依存性逆転の方針どおり、
@@ -21,8 +23,10 @@ export async function sendBroadcastMessages(
 ): Promise<Result<{ sentCount: number }, SendBroadcastError>> {
   // 未実装であることを明示するため、あえて何も送信せずにエラーを返す。
   // （投げっぱなしのthrowにしないのはINV-6：外部送信の失敗はResult型で表現する方針に揃えるため）
-  return err({
-    kind: "notImplemented",
-    message: `LINE送信機能は現在準備中です（送信予定: 「${tagName}」タグ ${permit.count}名 / タグID ${tagId}）。しばらくしてからもう一度お試しください。`,
-  });
+  // ここでの詳細はサーバーログにだけ残す（画面には出さない）。実装が入ったら
+  // MessageSender.multicast(...)の引数としてtagId/tagName/permit.countをそのまま使う想定。
+  console.info(
+    `[broadcastSender] notImplemented: tagId=${tagId} tagName=${tagName} count=${permit.count}`,
+  );
+  return err({ kind: "notImplemented" });
 }
