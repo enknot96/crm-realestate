@@ -10,6 +10,7 @@ import { err, ok, Result } from "../shared/result";
 export type BroadcastPreview = {
   tagId: TagId;
   tagName: string;
+  message: string;
   recipientCount: number; // 実際にLINEが届く人数
   monthlyQuota: number;
   remainingBeforeSend: number; // 今、送信前の時点で残っている件数
@@ -17,6 +18,7 @@ export type BroadcastPreview = {
 };
 
 type TagNotFoundError = { kind: "tagNotFound" };
+type EmptyMessageError = { kind: "emptyMessage" };
 type NoRecipientError = { kind: "noRecipient"; tagName: string };
 type QuotaExceededError = {
   kind: "quotaExceeded";
@@ -27,6 +29,7 @@ type QuotaExceededError = {
 type RepositoryError = { kind: "repository"; message: string };
 export type BroadcastPreviewError =
   | TagNotFoundError
+  | EmptyMessageError
   | NoRecipientError
   | QuotaExceededError
   | RepositoryError;
@@ -40,9 +43,14 @@ export async function previewBroadcast(
     messageLogRepo: MessageLogRepository;
   },
   tagId: TagId,
+  message: string,
   now: Date,
   monthlyQuota: number,
 ): Promise<Result<BroadcastPreview, BroadcastPreviewError>> {
+  if (message.trim() === "") {
+    return err({ kind: "emptyMessage" });
+  }
+
   const tagResult = await resolveTag(deps.tagRepo, tagId);
   if (tagResult.kind === "err") {
     return err(tagResult.error);
@@ -82,6 +90,7 @@ export async function previewBroadcast(
   return ok({
     tagId,
     tagName: tag.name,
+    message,
     recipientCount,
     monthlyQuota,
     remainingBeforeSend,
