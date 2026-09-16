@@ -17,7 +17,7 @@ export function BroadcastForm(props: Props) {
     kind: "idle" as const,
   });
   const dialogRef = useRef<HTMLDialogElement>(null);
-  // INV-4: タグ名を手入力で再確認させる、意図的な摩擦。削ってはいけない
+  // タグ名を手入力で再確認させる、意図的な摩擦 削ってはいけない
   const [typedTagName, setTypedTagName] = useState("");
 
   const preview = previewState.kind === "success" ? previewState.preview : null;
@@ -40,6 +40,8 @@ export function BroadcastForm(props: Props) {
 
   return (
     <>
+      {/* 送りたいメッセージと、送りたいタグを指定
+          そのタグに合致するLINEユーザーが何人いるかをDBから数える → 「この人数に送るよ」というプレビューが出てくる */}
       <form
         action={previewAction}
         className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-6"
@@ -52,15 +54,32 @@ export function BroadcastForm(props: Props) {
             defaultValue=""
             className="rounded border border-gray-300 p-2"
           >
-            <option value="" disabled>
+            <option
+              value=""
+              disabled
+            >
               選択してください
             </option>
             {props.tags.map((tag) => (
-              <option key={tag.id} value={tag.id}>
+              <option
+                key={tag.id}
+                value={tag.id}
+              >
                 {tag.name}
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="flex flex-col gap-1">
+          <span className="font-bold text-gray-700">送りたい内容</span>
+          <textarea
+            name="message"
+            required
+            rows={4}
+            defaultValue={preview?.message ?? ""}
+            className="rounded border border-gray-300 p-2"
+          />
         </label>
 
         {previewState.kind === "error" && (
@@ -76,14 +95,17 @@ export function BroadcastForm(props: Props) {
         </button>
       </form>
 
-      {/* 送信前確認モーダル。INV-4: 宛先の実数と内訳を必ず表示する */}
+      {/* 送信前確認モーダル 宛先の実数と内訳を必ず表示する */}
       <dialog
         ref={dialogRef}
         className="w-full max-w-sm rounded-lg p-0 backdrop:bg-black/40"
         onClose={() => setTypedTagName("")}
       >
         {preview && (
-          <form action={confirmAction} className="flex flex-col gap-4 p-6">
+          <form
+            action={confirmAction}
+            className="flex flex-col gap-4 p-6"
+          >
             <h2 className="text-lg font-bold">送信内容の確認</h2>
 
             <dl className="flex flex-col gap-2 rounded-lg bg-gray-50 p-4 text-sm">
@@ -103,6 +125,10 @@ export function BroadcastForm(props: Props) {
                 <dt className="text-gray-500">送信後に残る件数</dt>
                 <dd className="font-bold">{preview.remainingAfterSend}件</dd>
               </div>
+              <div className="flex flex-col gap-1">
+                <dt className="text-gray-500">送る内容</dt>
+                <dd className="whitespace-pre-wrap font-bold">{preview.message}</dd>
+              </div>
             </dl>
 
             <label className="flex flex-col gap-1">
@@ -119,7 +145,16 @@ export function BroadcastForm(props: Props) {
               />
             </label>
 
-            <input type="hidden" name="tagId" value={preview.tagId} />
+            <input
+              type="hidden"
+              name="tagId"
+              value={preview.tagId}
+            />
+            <input
+              type="hidden"
+              name="message"
+              value={preview.message}
+            />
 
             {confirmState.kind === "error" && (
               <p className="text-sm text-red-600">{describeConfirmError(confirmState.error)}</p>
