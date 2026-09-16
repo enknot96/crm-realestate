@@ -1,34 +1,60 @@
 import "server-only";
 
-// DAL
+// DAL 合成ルート
+// 本物のDB実装(drizzleXxx)を使うか、Fake実装(fakeXxx)を使うかを 決める場所を1箇所に集める
 
 import { TagId } from "@/domain/shared/branded";
 import { getRemainingQuota as getRemainingQuotaUseCase } from "@/domain/messaging/quotaMeter";
 import { previewBroadcast } from "@/domain/messaging/broadcastPreview";
 import { confirmBroadcast } from "@/domain/messaging/broadcastConfirm";
+import { MessageSender } from "@/domain/messaging/messageSender";
+import { MessageLogWriter } from "@/domain/messaging/messageLogWriter";
 import { drizzleTagRepository } from "@/infra/db/tagRepository";
 import { drizzleCustomerRepository } from "@/infra/db/customerRepository";
-import { fakeMessageLogRepository } from "@/infra/fake/messageLogRepository";
+import { drizzleMessageLogRepository } from "@/infra/db/messageLogRepository";
+import { drizzleSegmentRepository } from "@/infra/db/segmentRepository";
+import { drizzleMessageLogWriter } from "@/infra/db/messageLogWriter";
+import { createFakeMessageSender } from "@/infra/fake/fakeMessageSender";
+import { fakeMessageLogWriter } from "@/infra/fake/messageLogWriter";
+import { createLineMessageSenderFromAccessToken } from "@/infra/line/lineMessageSender";
 import { env } from "@/config/env";
-import { err, Result } from "@/domain/shared/result";
+import { Result } from "@/domain/shared/result";
+
+// DEMO_MODEに応じて実装を切り替える src/domain側には if (DEMO_MODE) を書かない
+const messageSender: MessageSender = env.DEMO_MODE
+  ? createFakeMessageSender()
+  : createLineMessageSenderFromAccessToken(env.LINE_CHANNEL_ACCESS_TOKEN);
+
+const messageLogWriter: MessageLogWriter = env.DEMO_MODE
+  ? fakeMessageLogWriter
+  : drizzleMessageLogWriter;
 
 const broadcastDeps = {
   tagRepo: drizzleTagRepository,
   customerRepo: drizzleCustomerRepository,
-  messageLogRepo: fakeMessageLogRepository,
+  messageLogRepo: drizzleMessageLogRepository,
+  segmentRepo: drizzleSegmentRepository,
+  messageSender,
+  messageLogWriter,
 };
-
-const MESSAGE_LOG_TRACKING_READY = false;
 
 export const getRemainingQuota = async (): Promise<Result<number, string>> => {
-  if (!MESSAGE_LOG_TRACKING_READY) {
-    return err("送信実績の集計機能は準備中のため、確認できません");
-  }
-  return getRemainingQuotaUseCase(fakeMessageLogRepository, new Date(), env.MONTHLY_MESSAGE_QUOTA);
+  return getRemainingQuotaUseCase(
+    drizzleMessageLogRepository,
+    new Date(),
+    env.MONTHLY_MESSAGE_QUOTA,
+  );
 };
 
-export const previewTagBroadcast = (tagId: TagId) =>
-  previewBroadcast(broadcastDeps, tagId, new Date(), env.MONTHLY_MESSAGE_QUOTA);
+export const previewTagBroadcast = (tagId: TagId, message: string) =>
+  previewBroadcast(broadcastDeps, tagId, message, new Date(), env.MONTHLY_MESSAGE_QUOTA);
 
-export const confirmTagBroadcast = (tagId: TagId, typedTagName: string) =>
-  confirmBroadcast(broadcastDeps, tagId, typedTagName, new Date(), env.MONTHLY_MESSAGE_QUOTA);
+export const confirmTagBroadcast = (tagId: TagId, typedTagName: string, message: string) =>
+  confirmBroadcast(
+    broadcastDeps,
+    tagId,
+    typedTagName,
+    message,
+    new Date(),
+    env.MONTHLY_MESSAGE_QUOTA,
+  );
