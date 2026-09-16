@@ -39,6 +39,7 @@ export const tags = pgTable("tags", {
 });
 
 // どの顧客にどのタグがついているか を管理する
+// 顧客(customers)とタグ(tags)は「多対多」の関係
 export const customerTags = pgTable(
   "customer_tags",
   {
