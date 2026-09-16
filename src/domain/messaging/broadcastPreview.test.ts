@@ -48,6 +48,7 @@ function createFakeMessageLogRepository(currentCount: number): MessageLogReposit
 const sellerTag: Tag = { id: 1 as TagId, name: "売主" };
 const now = new Date("2026-09-14T00:00:00+09:00");
 const monthlyQuota = 200;
+const message = "テストメッセージ";
 
 describe("previewBroadcast", () => {
   it("正常な場合、タグ名・人数・残り件数を含むプレビューを返す", async () => {
@@ -57,12 +58,13 @@ describe("previewBroadcast", () => {
       messageLogRepo: createFakeMessageLogRepository(100),
     };
 
-    const result = await previewBroadcast(deps, sellerTag.id, now, monthlyQuota);
+    const result = await previewBroadcast(deps, sellerTag.id, message, now, monthlyQuota);
 
     expect(result).toEqual(
       ok({
         tagId: sellerTag.id,
         tagName: "売主",
+        message,
         recipientCount: 12,
         monthlyQuota: 200,
         remainingBeforeSend: 100, // 200 - 100
@@ -78,7 +80,7 @@ describe("previewBroadcast", () => {
       messageLogRepo: createFakeMessageLogRepository(0),
     };
 
-    const result = await previewBroadcast(deps, sellerTag.id, now, monthlyQuota);
+    const result = await previewBroadcast(deps, sellerTag.id, message, now, monthlyQuota);
 
     expect(result).toEqual(err({ kind: "tagNotFound" }));
   });
@@ -90,7 +92,7 @@ describe("previewBroadcast", () => {
       messageLogRepo: createFakeMessageLogRepository(0),
     };
 
-    const result = await previewBroadcast(deps, sellerTag.id, now, monthlyQuota);
+    const result = await previewBroadcast(deps, sellerTag.id, message, now, monthlyQuota);
 
     expect(result).toEqual(err({ kind: "noRecipient", tagName: "売主" }));
   });
@@ -103,7 +105,7 @@ describe("previewBroadcast", () => {
       messageLogRepo: createFakeMessageLogRepository(150),
     };
 
-    const result = await previewBroadcast(deps, sellerTag.id, now, monthlyQuota);
+    const result = await previewBroadcast(deps, sellerTag.id, message, now, monthlyQuota);
 
     expect(result.kind).toBe("ok");
     if (result.kind === "ok") {
@@ -119,7 +121,7 @@ describe("previewBroadcast", () => {
       messageLogRepo: createFakeMessageLogRepository(150),
     };
 
-    const result = await previewBroadcast(deps, sellerTag.id, now, monthlyQuota);
+    const result = await previewBroadcast(deps, sellerTag.id, message, now, monthlyQuota);
 
     expect(result).toEqual(
       err({
@@ -138,7 +140,7 @@ describe("previewBroadcast", () => {
       messageLogRepo: createFakeMessageLogRepository(210),
     };
 
-    const result = await previewBroadcast(deps, sellerTag.id, now, monthlyQuota);
+    const result = await previewBroadcast(deps, sellerTag.id, message, now, monthlyQuota);
 
     expect(result).toEqual(
       err({
@@ -157,9 +159,21 @@ describe("previewBroadcast", () => {
       messageLogRepo: createFakeMessageLogRepository(0),
     };
 
-    const result = await previewBroadcast(deps, sellerTag.id, now, monthlyQuota);
+    const result = await previewBroadcast(deps, sellerTag.id, message, now, monthlyQuota);
 
     expect(result).toEqual(err({ kind: "repository", message: "DB接続エラー" }));
+  });
+
+  it("本文が空の場合はemptyMessageを返す", async () => {
+    const deps = {
+      tagRepo: createFakeTagRepository([sellerTag]),
+      customerRepo: createFakeCustomerRepository(async () => ok(12)),
+      messageLogRepo: createFakeMessageLogRepository(0),
+    };
+
+    const result = await previewBroadcast(deps, sellerTag.id, "   ", now, monthlyQuota);
+
+    expect(result).toEqual(err({ kind: "emptyMessage" }));
   });
 
   it("送信実績の取得に失敗した場合はrepositoryエラーを返す", async () => {
@@ -169,7 +183,7 @@ describe("previewBroadcast", () => {
       messageLogRepo: { countThisMonth: async () => err<number, string>("DB接続エラー") },
     };
 
-    const result = await previewBroadcast(deps, sellerTag.id, now, monthlyQuota);
+    const result = await previewBroadcast(deps, sellerTag.id, message, now, monthlyQuota);
 
     expect(result).toEqual(err({ kind: "repository", message: "DB接続エラー" }));
   });
