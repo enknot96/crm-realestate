@@ -29,13 +29,6 @@ export function BroadcastForm(props: Props) {
     }
   }, [previewState]);
 
-  // 送信に成功したら、モーダルを閉じる（開いたまま残して二重送信できそうな見た目にしない）
-  useEffect(() => {
-    if (confirmState.kind === "success") {
-      dialogRef.current?.close();
-    }
-  }, [confirmState]);
-
   const canSend = preview !== null && typedTagName.trim() === preview.tagName;
 
   return (
@@ -98,7 +91,7 @@ export function BroadcastForm(props: Props) {
       {/* 送信前確認モーダル 宛先の実数と内訳を必ず表示する */}
       <dialog
         ref={dialogRef}
-        className="w-full max-w-sm rounded-lg p-0 backdrop:bg-black/40"
+        className="m-auto w-full max-w-sm rounded-lg p-0 backdrop:bg-black/40"
         onClose={() => setTypedTagName("")}
       >
         {preview && (
@@ -163,22 +156,34 @@ export function BroadcastForm(props: Props) {
               <p className="text-sm text-brand-teal">{confirmState.sentCount}件、送信しました</p>
             )}
 
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => dialogRef.current?.close()}
-                className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 font-bold text-gray-600 hover:bg-gray-50"
-              >
-                キャンセル
-              </button>
-              <button
-                type="submit"
-                disabled={!canSend || isConfirmPending}
-                className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                送信する
-              </button>
-            </div>
+            {confirmState.kind === "success" ? (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => dialogRef.current?.close()}
+                  className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy"
+                >
+                  閉じる
+                </button>
+              </div>
+            ) : (
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => dialogRef.current?.close()}
+                  className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 font-bold text-gray-600 hover:bg-gray-50"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  disabled={!canSend || isConfirmPending}
+                  className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  送信する
+                </button>
+              </div>
+            )}
           </form>
         )}
       </dialog>
