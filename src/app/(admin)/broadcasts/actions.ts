@@ -32,7 +32,8 @@ export async function previewBroadcastAction(
   if (tagId === null) {
     return { kind: "error", error: { kind: "tagNotFound" } };
   }
-  const result = await previewTagBroadcast(tagId);
+  const message = String(formData.get("message") ?? "");
+  const result = await previewTagBroadcast(tagId, message);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }
@@ -53,7 +54,8 @@ export async function confirmBroadcastAction(
     return { kind: "error", error: { kind: "tagNotFound" } };
   }
   const typedTagName = String(formData.get("typedTagName") ?? "");
-  const result = await confirmTagBroadcast(tagId, typedTagName);
+  const message = String(formData.get("message") ?? "");
+  const result = await confirmTagBroadcast(tagId, typedTagName, message);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }
