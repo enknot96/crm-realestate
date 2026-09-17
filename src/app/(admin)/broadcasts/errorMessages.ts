@@ -1,5 +1,7 @@
 import { BroadcastPreviewError } from "@/domain/messaging/broadcastPreview";
 import { ConfirmBroadcastError } from "@/domain/messaging/broadcastConfirm";
+import { SchedulePreviewError } from "@/domain/messaging/previewScheduledBroadcast";
+import { ScheduleBroadcastError } from "@/domain/messaging/scheduleBroadcast";
 import { assertNever } from "@/domain/shared/assertNever";
 
 // 画面には専門用語を出さない
@@ -45,6 +47,42 @@ export function describeConfirmError(error: ConfirmBroadcastError): string {
     case "unsupportedMessage":
       console.error("[broadcasts] 未対応のメッセージ形式:", error.detail);
       return "この内容は送信できませんでした。文章を短くするなどして、もう一度お試しください。";
+    default:
+      return assertNever(error);
+  }
+}
+
+export function describeSchedulePreviewError(error: SchedulePreviewError): string {
+  switch (error.kind) {
+    case "tagNotFound":
+      return "指定されたタグが見つかりませんでした。もう一度選び直してください。";
+    case "emptyMessage":
+      return "送信する内容を入力してください。";
+    case "noRecipient":
+      return `「${error.tagName}」のお客様でLINEとつながっている方がいないため、予約できません。顧客一覧からLINEの友だちと紐づけてください。`;
+    case "pastDateTime":
+      return "送信予定日時には、これより後の日時を指定してください。";
+    case "repository":
+      console.error("[broadcasts] 予約確認情報の取得に失敗:", error.message);
+      return "確認情報の取得に失敗しました。時間をおいてもう一度お試しください。";
+    default:
+      return assertNever(error);
+  }
+}
+
+export function describeScheduleError(error: ScheduleBroadcastError): string {
+  switch (error.kind) {
+    case "tagNotFound":
+      return "指定されたタグが見つかりませんでした。もう一度選び直してください。";
+    case "emptyMessage":
+      return "送信する内容を入力してください。";
+    case "tagNameMismatch":
+      return "入力されたタグ名が一致しません。表示されているタグ名をそのまま入力してください。";
+    case "pastDateTime":
+      return "送信予定日時には、これより後の日時を指定してください。";
+    case "repository":
+      console.error("[broadcasts] 予約の保存に失敗:", error.message);
+      return "予約の保存に失敗しました。時間をおいてもう一度お試しください。";
     default:
       return assertNever(error);
   }

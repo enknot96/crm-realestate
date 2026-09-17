@@ -7,6 +7,8 @@ import { TagId } from "@/domain/shared/branded";
 import { getRemainingQuota as getRemainingQuotaUseCase } from "@/domain/messaging/quotaMeter";
 import { previewBroadcast } from "@/domain/messaging/broadcastPreview";
 import { confirmBroadcast } from "@/domain/messaging/broadcastConfirm";
+import { previewScheduledBroadcast } from "@/domain/messaging/previewScheduledBroadcast";
+import { scheduleBroadcast } from "@/domain/messaging/scheduleBroadcast";
 import { MessageSender } from "@/domain/messaging/messageSender";
 import { MessageLogWriter } from "@/domain/messaging/messageLogWriter";
 import { drizzleTagRepository } from "@/infra/db/tagRepository";
@@ -14,6 +16,7 @@ import { drizzleCustomerRepository } from "@/infra/db/customerRepository";
 import { drizzleMessageLogRepository } from "@/infra/db/messageLogRepository";
 import { drizzleSegmentRepository } from "@/infra/db/segmentRepository";
 import { drizzleMessageLogWriter } from "@/infra/db/messageLogWriter";
+import { drizzleBroadcastRepository } from "@/infra/db/broadcastRepository";
 import { createFakeMessageSender } from "@/infra/fake/fakeMessageSender";
 import { fakeMessageLogWriter } from "@/infra/fake/messageLogWriter";
 import { createLineMessageSenderFromAccessToken } from "@/infra/line/lineMessageSender";
@@ -57,4 +60,29 @@ export const confirmTagBroadcast = (tagId: TagId, typedTagName: string, message:
     message,
     new Date(),
     env.MONTHLY_MESSAGE_QUOTA,
+  );
+
+export const previewScheduledTagBroadcast = (tagId: TagId, message: string, scheduledAt: Date) =>
+  previewScheduledBroadcast(
+    broadcastDeps,
+    tagId,
+    message,
+    scheduledAt,
+    new Date(),
+    env.MONTHLY_MESSAGE_QUOTA,
+  );
+
+export const scheduleTagBroadcast = (
+  tagId: TagId,
+  typedTagName: string,
+  message: string,
+  scheduledAt: Date,
+) =>
+  scheduleBroadcast(
+    { tagRepo: broadcastDeps.tagRepo, broadcastRepo: drizzleBroadcastRepository },
+    tagId,
+    typedTagName,
+    message,
+    scheduledAt,
+    new Date(),
   );

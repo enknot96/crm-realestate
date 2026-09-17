@@ -1,4 +1,4 @@
-import { CustomerId, LineUserId, PropertyId, TagId } from "@/domain/shared/branded";
+import { BroadcastId, CustomerId, LineUserId, PropertyId, TagId } from "@/domain/shared/branded";
 import { integer, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 // 定数 lineFriends = TS側でこのテーブルを参照するときに使う名前
@@ -80,7 +80,7 @@ export const messageLogs = pgTable("message_logs", {
 });
 
 export const broadcasts = pgTable("broadcasts", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").primaryKey().defaultRandom().$type<BroadcastId>(),
   tagId: integer("tag_id")
     .notNull()
     .references(() => tags.id)
