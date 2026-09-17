@@ -1,5 +1,22 @@
-import { BroadcastId, CustomerId, LineUserId, PropertyId, TagId } from "@/domain/shared/branded";
-import { integer, pgTable, primaryKey, serial, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  BroadcastId,
+  CustomerId,
+  LineUserId,
+  PropertyId,
+  ReportId,
+  TagId,
+} from "@/domain/shared/branded";
+import { ChecklistResult } from "@/domain/report/checklistItems";
+import {
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  serial,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 // 定数 lineFriends = TS側でこのテーブルを参照するときに使う名前
 // 第一引数 lineFriends = テーブル名
@@ -70,6 +87,22 @@ export const properties = pgTable("properties", {
   address: text("address"),
   structureType: text("structure_type"),
   floors: integer("floors"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ステートは "draft" | "reviewing" のみ(Phase4a時点)
+// body/generatedByは reviewing になって初めて値が入る
+export const patrolReports = pgTable("patrol_reports", {
+  id: uuid("id").primaryKey().defaultRandom().$type<ReportId>(),
+  propertyId: uuid("property_id")
+    .notNull()
+    .references(() => properties.id)
+    .$type<PropertyId>(),
+  photoKeys: text("photo_keys").array().notNull(),
+  checklistResults: jsonb("checklist_results").notNull().$type<ChecklistResult[]>(),
+  status: text("status").notNull(),
+  body: text("body"),
+  generatedBy: text("generated_by"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
