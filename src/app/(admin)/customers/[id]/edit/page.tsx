@@ -20,6 +20,8 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
   }
   const customer = result.value;
 
+  // DB操作を一つずつ await ~ ですると、3つのクエリが直列に実行され、待ち時間が多くなるため、
+  // Promise.all で3つを同時に投げ、全部完了するのを待つ
   const [allTagsResult, selectedTagIdsResult, propertiesResult] = await Promise.all([
     listTags(),
     getTagIds(customer.id),
@@ -39,7 +41,10 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">顧客の編集</h1>
-        <Link href="/customers" className="font-bold text-brand-teal hover:text-brand-navy">
+        <Link
+          href="/customers"
+          className="font-bold text-brand-teal hover:text-brand-navy"
+        >
           一覧へ
         </Link>
       </div>
