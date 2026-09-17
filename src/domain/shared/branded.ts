@@ -28,14 +28,4 @@ export type LineUserId = Brand<string, "LineUserId">;
 export type PropertyId = Brand<string, "PropertyId">;
 export type ReportId = Brand<string, "ReportId">;
 export type TagId = Brand<number, "TagId">;
-
-// Bだけで区別はできる（"CustomerId" ≠ "LineUserId"など）
-// これはその通り
-// でもBを裸のままstringに&すると、Bがstringのサブタイプなので潰れてしまう（string & "CustomerId" → "CustomerId"になってしまう）
-// 潰れないようにするには、Bをオブジェクトの「値」として一段くるむ必要がある（オブジェクトとプリミティブは別カテゴリなので、&しても潰れない）
-// オブジェクトである以上、構文上「キー」が必須
-// だから何かしらキーを用意しないといけない
-// そのキーは4つの型すべてで共通でよい（というよりむしろ共通であるべき。共通の型(Brand)ファミリーだと分かるように）
-// 実際にその区別を担っているのはBの方
-// ただし、そのキーが他の無関係な型と偶然被らないように、unique symbolであるbrandを採用している
-// 「キー名の衝突という、B の値だけでは絶対に防げない事故」を防いでいる
+export type BroadcastId = Brand<string, "BroadcastId">;

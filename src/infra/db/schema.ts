@@ -78,3 +78,17 @@ export const messageLogs = pgTable("message_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
   sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const broadcasts = pgTable("broadcasts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tagId: integer("tag_id")
+    .notNull()
+    .references(() => tags.id)
+    .$type<TagId>(),
+  message: text("message").notNull(),
+  scheduledAt: timestamp("scheduled_at", { withTimezone: true }).notNull(),
+  status: text("status").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  sentCount: integer("sent_count"),
+});

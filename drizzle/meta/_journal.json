@@ -43,6 +43,13 @@
       "when": 1789388674546,
       "tag": "0005_bouncy_stranger",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789637983553,
+      "tag": "0006_strong_queen_noir",
+      "breakpoints": true
     }
   ]
 }
