@@ -8,7 +8,9 @@ import {
   setTags,
   updateCustomer,
 } from "@/app/lib/customer";
+import { createProperty } from "@/app/lib/property";
 import { CustomerServiceError } from "@/domain/customer/customerService";
+import { PropertyServiceError } from "@/domain/property/propertyService";
 import { CustomerId, TagId } from "@/domain/shared/branded";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -73,6 +75,25 @@ export async function setTagsAction(
   const result = await setTags(customerId as CustomerId, tagIds);
   if (result.kind === "err") {
     return { kind: "error", message: result.error };
+  }
+  revalidatePath(`/customers/${customerId}/edit`);
+  return { kind: "success" };
+}
+
+export type CreatePropertyActionState =
+  | { kind: "success" }
+  | { kind: "error"; error: PropertyServiceError }
+  | null;
+
+export async function createPropertyAction(
+  prevState: CreatePropertyActionState,
+  formData: FormData,
+): Promise<CreatePropertyActionState> {
+  const customerId = formData.get("customerId");
+  const input = Object.fromEntries(formData);
+  const result = await createProperty(customerId as CustomerId, input);
+  if (result.kind === "err") {
+    return { kind: "error", error: result.error };
   }
   revalidatePath(`/customers/${customerId}/edit`);
   return { kind: "success" };
