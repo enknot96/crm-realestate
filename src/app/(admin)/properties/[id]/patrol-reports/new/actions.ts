@@ -6,7 +6,8 @@ import { CHECKLIST_ITEMS, ChecklistResult } from "@/domain/report/checklistItems
 import { CreatePatrolReportError, PhotoInput } from "@/domain/report/createPatrolReport";
 import { PropertyId } from "@/domain/shared/branded";
 
-// Action層だけのエラー(フォーム自体の入力不備)。ドメイン層のCreatePatrolReportErrorとは別に扱う
+// Action層だけのエラー(フォーム自体の入力不備)
+// ドメイン層のCreatePatrolReportErrorとは別に扱う
 type InvalidChecklistError = { kind: "invalidChecklist" };
 export type CreatePatrolReportActionError = CreatePatrolReportError | InvalidChecklistError;
 
