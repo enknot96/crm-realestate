@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CustomerId } from "../shared/branded";
+import { CustomerId, PropertyId } from "../shared/branded";
 import { Property, PropertyRepository } from "./repository";
 import { propertyFormSchema } from "./schema";
 import { err, Result } from "../shared/result";
@@ -10,6 +10,10 @@ export type PropertyServiceError = ValidationError | RepositoryError;
 
 export async function listPropertiesByCustomerId(repo: PropertyRepository, customerId: CustomerId) {
   return repo.listByCustomerId(customerId);
+}
+
+export async function getPropertyById(repo: PropertyRepository, id: PropertyId) {
+  return repo.findById(id);
 }
 
 export async function createProperty(
