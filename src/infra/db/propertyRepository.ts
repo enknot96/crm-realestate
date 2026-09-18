@@ -16,6 +16,12 @@ export const drizzlePropertyRepository: PropertyRepository = {
         .orderBy(desc(properties.createdAt));
     }, "物件一覧の取得に失敗しました");
   },
+  findById: (id) => {
+    return fromPromise(async () => {
+      const rows = await db.select().from(properties).where(eq(properties.id, id));
+      return rows[0] ?? null;
+    }, "物件情報の取得に失敗しました");
+  },
   create: (input) => {
     return fromPromise(async () => {
       const rows = await db

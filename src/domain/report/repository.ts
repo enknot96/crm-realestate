@@ -27,6 +27,7 @@ export type CreatePatrolReportInput = {
 // 約束（この型の関数名で、この型の引数名をもらう）だけを決めている
 export interface PatrolReportRepository {
   create(input: CreatePatrolReportInput): Promise<Result<PatrolReportRow, string>>;
+  findById(id: ReportId): Promise<Result<PatrolReportRow | null, string>>;
   updateBody(
     id: ReportId,
     body: string,
