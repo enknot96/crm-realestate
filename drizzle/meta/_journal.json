@@ -50,6 +50,13 @@
       "when": 1789637983553,
       "tag": "0006_strong_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789766692649,
+      "tag": "0007_stiff_lily_hollister",
+      "breakpoints": true
     }
   ]
 }
