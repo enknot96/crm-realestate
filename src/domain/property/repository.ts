@@ -21,5 +21,6 @@ export type CreatePropertyInput = {
 
 export interface PropertyRepository {
   listByCustomerId(customerId: CustomerId): Promise<Result<Property[], string>>;
+  findById(id: PropertyId): Promise<Result<Property | null, string>>;
   create(input: CreatePropertyInput): Promise<Result<Property, string>>;
 }
