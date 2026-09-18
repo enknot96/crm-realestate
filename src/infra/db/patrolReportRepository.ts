@@ -26,6 +26,12 @@ export const drizzlePatrolReportRepository: PatrolReportRepository = {
       return rows[0];
     }, "巡回報告の作成に失敗しました");
   },
+  findById: (id) => {
+    return fromPromise(async () => {
+      const rows = await db.select().from(patrolReports).where(eq(patrolReports.id, id));
+      return rows[0] ?? null;
+    }, "巡回報告の取得に失敗しました");
+  },
   updateBody: (id, body, generatedBy) => {
     return fromPromise(async () => {
       const rows = await db
