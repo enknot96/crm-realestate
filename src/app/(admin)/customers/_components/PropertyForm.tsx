@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { createPropertyAction } from "../actions";
 import { CustomerId } from "@/domain/shared/branded";
 import { Property } from "@/domain/property/repository";
@@ -45,6 +46,12 @@ export function PropertyForm(props: Props) {
                   {property.floors !== null && `${property.floors}階建て`}
                 </p>
               )}
+              <Link
+                href={`/properties/${property.id}/patrol-reports/new`}
+                className="mt-1 inline-block font-bold text-brand-teal hover:text-brand-navy"
+              >
+                巡回報告を作成
+              </Link>
             </li>
           ))}
         </ul>
