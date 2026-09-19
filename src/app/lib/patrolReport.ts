@@ -9,6 +9,8 @@ import {
 import { drizzlePatrolReportRepository } from "@/infra/db/patrolReportRepository";
 import { createR2PhotoStorage } from "@/infra/storage/r2PhotoStorage";
 import { createFakePhotoStorage } from "@/infra/fake/fakePhotoStorage";
+import { createAiReportPolisher } from "@/infra/ai/aiReportPolisher";
+import { createFakeTextPolisher } from "@/infra/fake/fakeTextPolisher";
 import { stripExif } from "@/infra/storage/exif";
 import { env } from "@/config/env";
 
@@ -23,13 +25,17 @@ const photoStorage = env.DEMO_MODE
       bucketName: env.R2_BUCKET_NAME,
     });
 
+const textPolisher = env.DEMO_MODE
+  ? createFakeTextPolisher()
+  : createAiReportPolisher(env.GOOGLE_GENERATIVE_AI_API_KEY);
+
 export const createPatrolReport = (
   propertyId: PropertyId,
   checklistResults: ChecklistResult[],
   photos: PhotoInput[],
 ) =>
   createPatrolReportUseCase(
-    { photoStorage, stripExif, patrolReportRepo: drizzlePatrolReportRepository },
+    { photoStorage, stripExif, patrolReportRepo: drizzlePatrolReportRepository, textPolisher },
     propertyId,
     checklistResults,
     photos,

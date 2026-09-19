@@ -4,6 +4,8 @@ import { ChecklistResult } from "./checklistItems";
 import { buildPatrolReportTemplate } from "./checklistTemplate";
 import { PatrolReportRow, PatrolReportRepository } from "./repository";
 import { PhotoStorage } from "./photoStorage";
+import { TextPolisher } from "./textPolisher";
+import { polishPatrolReportText } from "./polishPatrolReportText";
 import { err, ok, Result } from "../shared/result";
 
 type NoChecklistError = { kind: "noChecklist" };
@@ -34,6 +36,7 @@ export async function createPatrolReport(
     photoStorage: PhotoStorage;
     stripExif: (input: Buffer) => Promise<Buffer>;
     patrolReportRepo: PatrolReportRepository;
+    textPolisher: TextPolisher;
   },
   propertyId: PropertyId,
   checklistResults: ChecklistResult[],
@@ -64,15 +67,16 @@ export async function createPatrolReport(
     photoKeys.push(key);
   }
 
-  const body = buildPatrolReportTemplate(checklistResults);
+  const templateBody = buildPatrolReportTemplate(checklistResults);
+  const polished = await polishPatrolReportText(deps.textPolisher, templateBody);
 
   const createResult = await deps.patrolReportRepo.create({
     propertyId,
     photoKeys,
     checklistResults,
     status: "reviewing",
-    body,
-    generatedBy: "template",
+    body: polished.text,
+    generatedBy: polished.generatedBy,
   });
   if (createResult.kind === "err") {
     return err({ kind: "repository", message: createResult.error });
