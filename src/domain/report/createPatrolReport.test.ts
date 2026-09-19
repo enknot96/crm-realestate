@@ -4,6 +4,7 @@ import { PatrolReportRow, PatrolReportRepository } from "./repository";
 import { PhotoStorage } from "./photoStorage";
 import { TextPolisher } from "./textPolisher";
 import { ChecklistResult } from "./checklistItems";
+import { wrapReportWithGreeting } from "./reportGreeting";
 import { PropertyId, ReportId } from "../shared/branded";
 import { err, ok } from "../shared/result";
 
@@ -70,7 +71,7 @@ describe("createPatrolReport", () => {
         propertyId,
         checklistResults,
         status: "reviewing",
-        body: "AIが清書した報告文です",
+        body: wrapReportWithGreeting("AIが清書した報告文です"),
         generatedBy: "ai",
       }),
     );
@@ -91,7 +92,7 @@ describe("createPatrolReport", () => {
 
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
-        body: "外壁: 異常なし",
+        body: wrapReportWithGreeting("外壁: 異常なし"),
         generatedBy: "template",
       }),
     );

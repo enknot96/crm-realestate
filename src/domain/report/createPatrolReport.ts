@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { PropertyId } from "../shared/branded";
 import { ChecklistResult } from "./checklistItems";
 import { buildPatrolReportTemplate } from "./checklistTemplate";
+import { wrapReportWithGreeting } from "./reportGreeting";
 import { PatrolReportRow, PatrolReportRepository } from "./repository";
 import { PhotoStorage } from "./photoStorage";
 import { TextPolisher } from "./textPolisher";
@@ -69,13 +70,15 @@ export async function createPatrolReport(
 
   const templateBody = buildPatrolReportTemplate(checklistResults);
   const polished = await polishPatrolReportText(deps.textPolisher, templateBody);
+  // 挨拶・締めはAIに生成させず、ここで固定文言として結合する(表現のブレを防ぐ)
+  const fullBody = wrapReportWithGreeting(polished.text);
 
   const createResult = await deps.patrolReportRepo.create({
     propertyId,
     photoKeys,
     checklistResults,
     status: "reviewing",
-    body: polished.text,
+    body: fullBody,
     generatedBy: polished.generatedBy,
   });
   if (createResult.kind === "err") {
