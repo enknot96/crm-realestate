@@ -1,6 +1,7 @@
 import { getCustomerById, getTagIds } from "@/app/lib/customer";
 import { listTags } from "@/app/lib/tag";
 import { listPropertiesByCustomerId } from "@/app/lib/property";
+import { listPatrolReportsByPropertyId } from "@/app/lib/patrolReport";
 import { CustomerId } from "@/domain/shared/branded";
 import { notFound } from "next/navigation";
 import { CustomerForm } from "../../_components/CustomerForm";
@@ -36,6 +37,18 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
   if (propertiesResult.kind === "err") {
     return <p className="p-4 text-red-600">{propertiesResult.error}</p>;
   }
+
+  // 物件ごとの巡回報告一覧を並行取得する
+  // 失敗した物件は「一覧なし」として扱う(致命的なエラーにはしない)
+  const propertiesWithReports = await Promise.all(
+    propertiesResult.value.map(async (property) => {
+      const reportsResult = await listPatrolReportsByPropertyId(property.id);
+      return {
+        property,
+        reports: reportsResult.kind === "ok" ? reportsResult.value : [],
+      };
+    }),
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
@@ -76,7 +89,7 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
         <h2 className="mb-3 font-bold">物件</h2>
         <PropertyForm
           customerId={customer.id}
-          properties={propertiesResult.value}
+          properties={propertiesWithReports}
         />
       </div>
     </main>

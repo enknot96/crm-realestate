@@ -17,7 +17,12 @@ function createFakePhotoStorage(upload: PhotoStorage["upload"] = notImplemented)
 function createFakePatrolReportRepository(
   create: PatrolReportRepository["create"] = notImplemented,
 ): PatrolReportRepository {
-  return { create, findById: notImplemented, updateBody: notImplemented };
+  return {
+    create,
+    findById: notImplemented,
+    listByPropertyId: notImplemented,
+    updateBody: notImplemented,
+  };
 }
 
 const propertyId = "property-1" as PropertyId;

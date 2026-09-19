@@ -37,5 +37,8 @@ export const createPatrolReport = (
 
 export const getPatrolReportById = (id: ReportId) => drizzlePatrolReportRepository.findById(id);
 
+export const listPatrolReportsByPropertyId = (propertyId: PropertyId) =>
+  drizzlePatrolReportRepository.listByPropertyId(propertyId);
+
 export const updatePatrolReportBody = (id: ReportId, body: string) =>
   drizzlePatrolReportRepository.updateBody(id, body, "human");

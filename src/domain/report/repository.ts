@@ -28,6 +28,7 @@ export type CreatePatrolReportInput = {
 export interface PatrolReportRepository {
   create(input: CreatePatrolReportInput): Promise<Result<PatrolReportRow, string>>;
   findById(id: ReportId): Promise<Result<PatrolReportRow | null, string>>;
+  listByPropertyId(propertyId: PropertyId): Promise<Result<PatrolReportRow[], string>>;
   updateBody(
     id: ReportId,
     body: string,

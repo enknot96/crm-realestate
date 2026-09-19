@@ -1,6 +1,6 @@
 import { PatrolReportRepository } from "@/domain/report/repository";
 import { getDb } from "./client";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { patrolReports } from "./schema";
 import { fromPromise } from "@/domain/shared/result";
 
@@ -31,6 +31,15 @@ export const drizzlePatrolReportRepository: PatrolReportRepository = {
       const rows = await db.select().from(patrolReports).where(eq(patrolReports.id, id));
       return rows[0] ?? null;
     }, "巡回報告の取得に失敗しました");
+  },
+  listByPropertyId: (propertyId) => {
+    return fromPromise(async () => {
+      return db
+        .select()
+        .from(patrolReports)
+        .where(eq(patrolReports.propertyId, propertyId))
+        .orderBy(desc(patrolReports.createdAt));
+    }, "巡回報告一覧の取得に失敗しました");
   },
   updateBody: (id, body, generatedBy) => {
     return fromPromise(async () => {

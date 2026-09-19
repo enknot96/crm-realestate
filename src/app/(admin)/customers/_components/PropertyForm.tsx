@@ -5,11 +5,23 @@ import Link from "next/link";
 import { createPropertyAction } from "../actions";
 import { CustomerId } from "@/domain/shared/branded";
 import { Property } from "@/domain/property/repository";
+import { PatrolReportRow } from "@/domain/report/repository";
 
 type Props = {
   customerId: CustomerId;
-  properties: Property[];
+  properties: { property: Property; reports: PatrolReportRow[] }[];
 };
+
+function formatJst(date: Date): string {
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
 
 export function PropertyForm(props: Props) {
   const [state, formAction, isPending] = useActionState(createPropertyAction, null);
@@ -32,7 +44,7 @@ export function PropertyForm(props: Props) {
         <p className="text-sm text-gray-500">物件がまだ登録されていません。</p>
       ) : (
         <ul className="flex flex-col gap-2">
-          {props.properties.map((property) => (
+          {props.properties.map(({ property, reports }) => (
             <li
               key={property.id}
               className="rounded border border-gray-200 p-3 text-sm"
@@ -52,6 +64,21 @@ export function PropertyForm(props: Props) {
               >
                 巡回報告を作成
               </Link>
+
+              {reports.length > 0 && (
+                <ul className="mt-2 flex flex-col gap-1 border-t border-gray-100 pt-2">
+                  {reports.map((report) => (
+                    <li key={report.id}>
+                      <Link
+                        href={`/properties/${property.id}/patrol-reports/${report.id}`}
+                        className="text-brand-teal hover:text-brand-navy"
+                      >
+                        {formatJst(report.createdAt)}の巡回報告
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
