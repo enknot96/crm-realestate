@@ -90,8 +90,9 @@ export const properties = pgTable("properties", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ステートは "draft" | "reviewing" のみ(Phase4a時点)
+// ステートは "draft" | "reviewing" | "approved" | "sent" | "failed"
 // body/generatedByは reviewing になって初めて値が入る
+// approvedAt/sentAt/failedReasonは、それぞれの状態になって初めて値が入る
 export const patrolReports = pgTable("patrol_reports", {
   id: uuid("id").primaryKey().defaultRandom().$type<ReportId>(),
   propertyId: uuid("property_id")
@@ -103,7 +104,19 @@ export const patrolReports = pgTable("patrol_reports", {
   status: text("status").notNull(),
   body: text("body"),
   generatedBy: text("generated_by"),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  failedReason: text("failed_reason"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// 二重送信防止のDB制約
+// report_idをPKにすることで、同じ報告書に対する2回目のINSERTが主キー制約違反になる
+export const patrolReportSends = pgTable("patrol_report_sends", {
+  reportId: uuid("report_id")
+    .primaryKey()
+    .references(() => patrolReports.id)
+    .$type<ReportId>(),
 });
 
 // QuotaGuardの通数カウントの根拠となるテーブル(最小限のカラムのみ)
