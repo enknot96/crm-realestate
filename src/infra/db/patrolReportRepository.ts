@@ -59,4 +59,43 @@ export const drizzlePatrolReportRepository: PatrolReportRepository = {
       await db.delete(patrolReports).where(eq(patrolReports.id, id));
     }, "巡回報告の削除に失敗しました");
   },
+  approve: (id, approvedAt) => {
+    return fromPromise(async () => {
+      const rows = await db
+        .update(patrolReports)
+        .set({ status: "approved", approvedAt })
+        .where(eq(patrolReports.id, id))
+        .returning();
+      if (rows[0] === undefined) {
+        throw new Error("巡回報告の承認に失敗しました");
+      }
+      return rows[0];
+    }, "巡回報告の承認に失敗しました");
+  },
+  markSent: (id, sentAt) => {
+    return fromPromise(async () => {
+      const rows = await db
+        .update(patrolReports)
+        .set({ status: "sent", sentAt })
+        .where(eq(patrolReports.id, id))
+        .returning();
+      if (rows[0] === undefined) {
+        throw new Error("巡回報告の送信記録に失敗しました");
+      }
+      return rows[0];
+    }, "巡回報告の送信記録に失敗しました");
+  },
+  markFailed: (id, reason) => {
+    return fromPromise(async () => {
+      const rows = await db
+        .update(patrolReports)
+        .set({ status: "failed", failedReason: reason })
+        .where(eq(patrolReports.id, id))
+        .returning();
+      if (rows[0] === undefined) {
+        throw new Error("巡回報告の失敗記録に失敗しました");
+      }
+      return rows[0];
+    }, "巡回報告の失敗記録に失敗しました");
+  },
 };

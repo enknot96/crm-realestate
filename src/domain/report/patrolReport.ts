@@ -13,6 +13,27 @@ export type PatrolReport =
       checklistResults: ChecklistResult[];
       body: string;
       generatedBy: string;
+    }
+  | {
+      kind: "approved";
+      photoKeys: string[];
+      checklistResults: ChecklistResult[];
+      body: string;
+      approvedAt: Date;
+    }
+  | {
+      kind: "sent";
+      photoKeys: string[];
+      checklistResults: ChecklistResult[];
+      body: string;
+      sentAt: Date;
+    }
+  | {
+      kind: "failed";
+      photoKeys: string[];
+      checklistResults: ChecklistResult[];
+      body: string;
+      error: string;
     };
 
 export function toPatrolReport(row: PatrolReportRow): PatrolReport {
@@ -35,5 +56,44 @@ export function toPatrolReport(row: PatrolReportRow): PatrolReport {
       generatedBy: row.generatedBy,
     };
   }
+  if (row.approvedAt === null) {
+    throw new Error(`approvedAtがnullです: id=${row.id}`);
+  }
+  if (row.status === "approved") {
+    return {
+      kind: "approved",
+      photoKeys: row.photoKeys,
+      checklistResults: row.checklistResults,
+      body: row.body,
+      approvedAt: row.approvedAt,
+    };
+  }
+
+  if (row.status === "sent") {
+    if (row.sentAt === null) {
+      throw new Error(`sentAtがnullです: id=${row.id}`);
+    }
+    return {
+      kind: "sent",
+      photoKeys: row.photoKeys,
+      checklistResults: row.checklistResults,
+      body: row.body,
+      sentAt: row.sentAt,
+    };
+  }
+
+  if (row.status === "failed") {
+    if (row.failedReason === null) {
+      throw new Error(`failedReasonがnullです: id=${row.id}`);
+    }
+    return {
+      kind: "failed",
+      photoKeys: row.photoKeys,
+      checklistResults: row.checklistResults,
+      body: row.body,
+      error: row.failedReason,
+    };
+  }
+
   throw new Error(`予期しないstatusです: ${row.status}`);
 }

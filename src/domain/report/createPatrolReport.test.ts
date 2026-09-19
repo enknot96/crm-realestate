@@ -25,6 +25,9 @@ function createFakePatrolReportRepository(
     listByPropertyId: notImplemented,
     updateBody: notImplemented,
     remove: notImplemented,
+    approve: notImplemented,
+    markSent: notImplemented,
+    markFailed: notImplemented,
   };
 }
 
@@ -47,6 +50,9 @@ const createdRow: PatrolReportRow = {
   status: "reviewing",
   body: "AIが清書した報告文です",
   generatedBy: "ai",
+  approvedAt: null,
+  sentAt: null,
+  failedReason: null,
   createdAt: new Date(),
 };
 

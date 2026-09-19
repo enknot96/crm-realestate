@@ -12,6 +12,9 @@ export type PatrolReportRow = {
   status: string;
   body: string | null;
   generatedBy: string | null;
+  approvedAt: Date | null;
+  sentAt: Date | null;
+  failedReason: string | null;
   createdAt: Date;
 };
 
@@ -35,4 +38,7 @@ export interface PatrolReportRepository {
     body: string,
     generatedBy: string,
   ): Promise<Result<PatrolReportRow, string>>;
+  approve(id: ReportId, approvedAt: Date): Promise<Result<PatrolReportRow, string>>;
+  markSent(id: ReportId, sentAt: Date): Promise<Result<PatrolReportRow, string>>;
+  markFailed(id: ReportId, reason: string): Promise<Result<PatrolReportRow, string>>;
 }
