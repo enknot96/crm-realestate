@@ -12,7 +12,7 @@ function notImplemented(): never {
 }
 
 function createFakePhotoStorage(upload: PhotoStorage["upload"] = notImplemented): PhotoStorage {
-  return { upload };
+  return { upload, download: notImplemented };
 }
 
 function createFakePatrolReportRepository(

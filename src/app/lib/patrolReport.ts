@@ -48,3 +48,5 @@ export const listPatrolReportsByPropertyId = (propertyId: PropertyId) =>
 
 export const updatePatrolReportBody = (id: ReportId, body: string) =>
   drizzlePatrolReportRepository.updateBody(id, body, "human");
+
+export const downloadPatrolReportPhoto = (key: string) => photoStorage.download(key);

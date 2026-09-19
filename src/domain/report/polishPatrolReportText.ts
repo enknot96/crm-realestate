@@ -18,6 +18,8 @@ export async function polishPatrolReportText(
       generatedBy: "ai",
     };
   }
+  // ここでログを残しておかないと、清書に失敗してテンプレートのままになったことに誰も気づけない
+  console.error("[polishPatrolReportText] AI清書に失敗、テンプレート文章にフォールバック:", result.error);
   return {
     text: templateText,
     generatedBy: "template",
