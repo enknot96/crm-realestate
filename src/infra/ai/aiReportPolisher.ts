@@ -11,7 +11,8 @@ const polishedReportSchema = z.object({
 // ここに渡すのはテンプレート文章のテキストのみ、画像やPII(氏名・住所等)は一切渡さない
 export function createAiReportPolisher(apiKey: string): TextPolisher {
   const google = createGoogleGenerativeAI({ apiKey });
-  const model = google("gemini-3.8-flash");
+  // 枯れていて安定しているgemini-2.5-flashを使う
+  const model = google("gemini-2.5-flash");
 
   return {
     polish: (text) => {

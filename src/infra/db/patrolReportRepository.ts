@@ -54,4 +54,9 @@ export const drizzlePatrolReportRepository: PatrolReportRepository = {
       return rows[0];
     }, "巡回報告の更新に失敗しました");
   },
+  remove: (id) => {
+    return fromPromise(async () => {
+      await db.delete(patrolReports).where(eq(patrolReports.id, id));
+    }, "巡回報告の削除に失敗しました");
+  },
 };

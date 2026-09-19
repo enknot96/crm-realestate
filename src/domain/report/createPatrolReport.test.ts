@@ -23,6 +23,7 @@ function createFakePatrolReportRepository(
     findById: notImplemented,
     listByPropertyId: notImplemented,
     updateBody: notImplemented,
+    remove: notImplemented,
   };
 }
 

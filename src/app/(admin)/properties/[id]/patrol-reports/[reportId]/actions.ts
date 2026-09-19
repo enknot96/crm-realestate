@@ -1,8 +1,9 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { updatePatrolReportBody } from "@/app/lib/patrolReport";
-import { ReportId } from "@/domain/shared/branded";
+import { removePatrolReport, updatePatrolReportBody } from "@/app/lib/patrolReport";
+import { CustomerId, ReportId } from "@/domain/shared/branded";
 
 export type UpdatePatrolReportBodyState =
   | { kind: "idle" }
@@ -23,4 +24,20 @@ export async function updatePatrolReportBodyAction(
   }
   revalidatePath(`/properties/${propertyId}/patrol-reports/${id}`);
   return { kind: "success" };
+}
+
+type RemovePatrolReportState = { message: string } | null;
+
+export async function removePatrolReportAction(
+  prevState: RemovePatrolReportState,
+  formData: FormData,
+): Promise<RemovePatrolReportState> {
+  const id = formData.get("reportId") as ReportId;
+  const customerId = formData.get("customerId") as CustomerId;
+
+  const result = await removePatrolReport(id);
+  if (result.kind === "err") {
+    return { message: result.error };
+  }
+  redirect(`/customers/${customerId}/edit`);
 }

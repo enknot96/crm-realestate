@@ -50,3 +50,5 @@ export const updatePatrolReportBody = (id: ReportId, body: string) =>
   drizzlePatrolReportRepository.updateBody(id, body, "human");
 
 export const downloadPatrolReportPhoto = (key: string) => photoStorage.download(key);
+
+export const removePatrolReport = (id: ReportId) => drizzlePatrolReportRepository.remove(id);

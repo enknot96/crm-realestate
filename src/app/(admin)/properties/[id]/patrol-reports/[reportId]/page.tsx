@@ -2,6 +2,7 @@ import { getPatrolReportById } from "@/app/lib/patrolReport";
 import { ReportId } from "@/domain/shared/branded";
 import { toPatrolReport } from "@/domain/report/patrolReport";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { PatrolReportEditForm } from "./_components/PatrolReportEditForm";
 
 export default async function PatrolReportPage(
@@ -20,7 +21,15 @@ export default async function PatrolReportPage(
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-4 p-6">
-      <h1 className="text-xl font-bold">巡回報告</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">巡回報告</h1>
+        <Link
+          href={`/properties/${row.propertyId}/patrol-reports/${row.id}/delete`}
+          className="text-sm font-bold text-red-600 hover:underline"
+        >
+          この巡回報告を削除
+        </Link>
+      </div>
       {report.kind === "draft" ? (
         <p className="text-sm text-gray-500">
           報告文を準備中です。しばらくしてからもう一度開いてください。
