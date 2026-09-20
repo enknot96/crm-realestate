@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "dotenv -e .env.local -- vitest run",
     "seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
-    "reset-demo": "dotenv -e .env.local -- tsx scripts/reset-demo.ts"
+    "reset-demo": "dotenv -e .env.local -- tsx scripts/reset-demo.ts",
+    "e2e": "dotenv -e .env.local -- playwright test"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.74",
@@ -31,6 +32,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
