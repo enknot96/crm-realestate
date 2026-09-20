@@ -13,7 +13,6 @@ import { drizzleMessageLogRepository } from "@/infra/db/messageLogRepository";
 import { drizzlePropertyRepository } from "@/infra/db/propertyRepository";
 import { drizzleCustomerRepository } from "@/infra/db/customerRepository";
 import { createR2PhotoStorage } from "@/infra/storage/r2PhotoStorage";
-import { createFakePhotoStorage } from "@/infra/fake/fakePhotoStorage";
 import { createAiReportPolisher } from "@/infra/ai/aiReportPolisher";
 import { createFakeTextPolisher } from "@/infra/fake/fakeTextPolisher";
 import { createLinePatrolReportSenderFromAccessToken } from "@/infra/line/linePatrolReportSender";
@@ -24,16 +23,13 @@ import { err, Result } from "@/domain/shared/result";
 import { ApproveAndSendError } from "@/domain/report/approveAndSendPatrolReport";
 import { env } from "@/config/env";
 
-// DEMO_MODEに応じて実装を切り替える
-// src/domain側には if (DEMO_MODE) を書かない
-const photoStorage = env.DEMO_MODE
-  ? createFakePhotoStorage()
-  : createR2PhotoStorage({
-      accountId: env.R2_ACCOUNT_ID,
-      accessKeyId: env.R2_ACCESS_KEY_ID,
-      secretAccessKey: env.R2_SECRET_ACCESS_KEY,
-      bucketName: env.R2_BUCKET_NAME,
-    });
+// DEMO_MODEでも常にR2を使う
+const photoStorage = createR2PhotoStorage({
+  accountId: env.R2_ACCOUNT_ID,
+  accessKeyId: env.R2_ACCESS_KEY_ID,
+  secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+  bucketName: env.R2_BUCKET_NAME,
+});
 
 const textPolisher = env.DEMO_MODE
   ? createFakeTextPolisher()
