@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { listRecentNotifications } from "@/app/lib/reminder";
 import { noticeLabel, ruleTypeLabel } from "@/domain/reminder/reminderNotificationRepository";
+import { Card } from "@/app/(admin)/_components/Card";
+import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 const NOTIFICATION_LIMIT = 50;
 
@@ -31,12 +32,13 @@ export default async function NotificationsPage() {
     <main className="mx-auto flex w-full max-w-xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">通知</h1>
-        <Link
+        <LinkButton
           href="/customers"
-          className="font-bold text-brand-teal hover:text-brand-navy"
+          variant="secondary"
+          size="sm"
         >
           顧客一覧へ
-        </Link>
+        </LinkButton>
       </div>
 
       <p className="text-sm text-gray-500">
@@ -46,23 +48,20 @@ export default async function NotificationsPage() {
       {result.kind === "err" ? (
         <p className="text-red-600">{result.error}</p>
       ) : result.value.length === 0 ? (
-        <p className="rounded-lg border border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
-          通知の履歴はまだありません。
-        </p>
+        <Card className="text-center text-sm text-gray-500">通知の履歴はまだありません。</Card>
       ) : (
         <ul className="flex flex-col gap-2">
           {result.value.map((notification) => (
-            <li
-              key={notification.id}
-              className="rounded-lg border border-gray-200 bg-white p-4 text-sm"
-            >
-              <p className="font-bold">{notification.propertyName}</p>
-              <p className="text-gray-700">
-                {ruleTypeLabel(notification.ruleType)}（{formatJstDate(notification.occurrenceDate)}）
-              </p>
-              <p className="text-gray-500">
-                {noticeLabel(notification.noticeDaysBefore)} ・ {formatJst(notification.notifiedAt)}に送信
-              </p>
+            <li key={notification.id}>
+              <Card className="text-sm">
+                <p className="font-bold">{notification.propertyName}</p>
+                <p className="text-gray-700">
+                  {ruleTypeLabel(notification.ruleType)}（{formatJstDate(notification.occurrenceDate)}）
+                </p>
+                <p className="text-gray-500">
+                  {noticeLabel(notification.noticeDaysBefore)} ・ {formatJst(notification.notifiedAt)}に送信
+                </p>
+              </Card>
             </li>
           ))}
         </ul>

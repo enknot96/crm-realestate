@@ -2,6 +2,10 @@ import Link from "next/link";
 import { listPages } from "@/app/lib/customer";
 import { markContactedAction } from "./actions";
 import { isOverdue } from "@/domain/customer/contactStatus";
+import { Card } from "../_components/Card";
+import { Button } from "../_components/Button";
+import { LinkButton } from "../_components/LinkButton";
+import { buttonClassName } from "../_components/buttonStyles";
 
 const PAGE_SIZE = 20;
 const OVERDUE_THRESHOLD_DAYS = 30;
@@ -30,33 +34,38 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-bold">顧客一覧</h1>
-        <div className="flex items-center gap-4">
-          <Link href="/tags" className="font-bold text-brand-teal hover:text-brand-navy">
+        <div className="flex flex-wrap items-center gap-2">
+          <LinkButton
+            href="/tags"
+            variant="secondary"
+            size="sm"
+          >
             タグ管理
-          </Link>
-          <Link
+          </LinkButton>
+          <LinkButton
             href="/customers/line-friends"
-            className="font-bold text-brand-teal hover:text-brand-navy"
+            variant="secondary"
+            size="sm"
           >
             LINEお友だちの紐付け
-          </Link>
-          <Link
+          </LinkButton>
+          <LinkButton
             href="/customers/import"
-            className="font-bold text-brand-teal hover:text-brand-navy"
+            variant="secondary"
+            size="sm"
           >
             CSV取り込み
-          </Link>
-          <a href="/customers/export" className="font-bold text-brand-teal hover:text-brand-navy">
+          </LinkButton>
+          {/* ファイルダウンロードなのでNext.jsのクライアント遷移(Link)は使わず、素のaタグにする */}
+          <a
+            href="/customers/export"
+            className={buttonClassName("secondary", "sm")}
+          >
             CSVエクスポート
           </a>
-          <Link
-            href="/customers/new"
-            className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy"
-          >
-            新規登録
-          </Link>
+          <LinkButton href="/customers/new">新規登録</LinkButton>
         </div>
       </div>
 
@@ -70,43 +79,28 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
         />
       </form>
 
-      <table className="w-full border-collapse rounded-lg border border-gray-200 bg-white text-sm">
-        <thead>
-          <tr className="border-b border-gray-200 text-left text-gray-500">
-            <th className="p-3">名前</th>
-            <th className="p-3">電話番号</th>
-            <th className="p-3">LINE</th>
-            <th className="p-3">
-              <Link
-                href={`/customers?q=${query ?? ""}&page=${page}&sort=${nextSort}`}
-                className="hover:text-brand-navy"
-              >
-                最終連絡日 {sortOrder === "asc" ? "▲" : "▼"}
-              </Link>
-            </th>
-            <th className="p-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((customer) => {
-            const overdue = isOverdue(customer.lastContactedAt, today, OVERDUE_THRESHOLD_DAYS);
-            return (
-              <tr
-                key={customer.id}
-                className={`border-b border-gray-100 last:border-0 ${overdue ? "bg-red-50" : ""}`}
-              >
-                <td className="p-3">{customer.name}</td>
-                <td className="p-3">{customer.phone}</td>
-                <td className="p-3">
+      {/* モバイル(sm未満): カード表示 */}
+      <ul className="flex flex-col gap-2 sm:hidden">
+        {items.map((customer) => {
+          const overdue = isOverdue(customer.lastContactedAt, today, OVERDUE_THRESHOLD_DAYS);
+          return (
+            <li key={customer.id}>
+              <Card className={overdue ? "bg-red-50" : ""}>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-bold">{customer.name}</p>
+                    <p className="text-sm text-gray-600">{customer.phone}</p>
+                  </div>
                   {customer.lineUserId ? (
-                    <span className="rounded-full bg-brand-mint/20 px-2 py-0.5 text-xs font-bold text-brand-navy">
+                    <span className="rounded-full bg-brand-mint/20 px-2 py-0.5 text-xs font-bold whitespace-nowrap text-brand-navy">
                       連携済み
                     </span>
                   ) : (
-                    <span className="text-xs text-gray-400">未連携</span>
+                    <span className="text-xs whitespace-nowrap text-gray-400">未連携</span>
                   )}
-                </td>
-                <td className="p-3">
+                </div>
+                <p className="mt-2 text-sm text-gray-600">
+                  最終連絡日：
                   {customer.lastContactedAt ? (
                     <span className={overdue ? "font-bold text-red-600" : ""}>
                       {customer.lastContactedAt.toLocaleDateString("ja-JP")}
@@ -114,53 +108,135 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
                   ) : (
                     <span className="font-bold text-red-600">未接触</span>
                   )}
-                </td>
-                <td className="p-3">
-                  <div className="flex items-center gap-4 font-bold">
-                    <Link
-                      href={`/customers/${customer.id}/edit`}
-                      className="text-brand-teal hover:text-brand-navy"
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <LinkButton
+                    href={`/customers/${customer.id}/edit`}
+                    size="sm"
+                  >
+                    編集
+                  </LinkButton>
+                  <LinkButton
+                    href={`/customers/${customer.id}/delete`}
+                    variant="danger"
+                    size="sm"
+                  >
+                    削除
+                  </LinkButton>
+                  <form action={markContactedAction.bind(null, customer.id)}>
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      size="sm"
                     >
-                      編集
-                    </Link>
-                    <Link
-                      href={`/customers/${customer.id}/delete`}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      削除
-                    </Link>
-                    <form action={markContactedAction.bind(null, customer.id)}>
-                      <button
-                        type="submit"
-                        className="cursor-pointer text-brand-teal hover:text-brand-navy"
-                      >
-                        今日連絡した
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                      今日連絡した
+                    </Button>
+                  </form>
+                </div>
+              </Card>
+            </li>
+          );
+        })}
+      </ul>
 
-      <div className="flex items-center justify-center gap-6 text-sm">
+      {/* sm以上: 表形式 */}
+      <div className="hidden overflow-x-auto sm:block">
+        <table className="w-full border-collapse rounded-lg border border-gray-200 bg-white text-sm">
+          <thead>
+            <tr className="border-b border-gray-200 text-left text-gray-500">
+              <th className="p-3">名前</th>
+              <th className="p-3">電話番号</th>
+              <th className="p-3">LINE</th>
+              <th className="p-3">
+                <Link
+                  href={`/customers?q=${query ?? ""}&page=${page}&sort=${nextSort}`}
+                  className="hover:text-brand-navy"
+                >
+                  最終連絡日 {sortOrder === "asc" ? "▲" : "▼"}
+                </Link>
+              </th>
+              <th className="p-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((customer) => {
+              const overdue = isOverdue(customer.lastContactedAt, today, OVERDUE_THRESHOLD_DAYS);
+              return (
+                <tr
+                  key={customer.id}
+                  className={`border-b border-gray-100 last:border-0 ${overdue ? "bg-red-50" : ""}`}
+                >
+                  <td className="p-3">{customer.name}</td>
+                  <td className="p-3">{customer.phone}</td>
+                  <td className="p-3">
+                    {customer.lineUserId ? (
+                      <span className="rounded-full bg-brand-mint/20 px-2 py-0.5 text-xs font-bold text-brand-navy">
+                        連携済み
+                      </span>
+                    ) : (
+                      <span className="text-xs text-gray-400">未連携</span>
+                    )}
+                  </td>
+                  <td className="p-3">
+                    {customer.lastContactedAt ? (
+                      <span className={overdue ? "font-bold text-red-600" : ""}>
+                        {customer.lastContactedAt.toLocaleDateString("ja-JP")}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-red-600">未接触</span>
+                    )}
+                  </td>
+                  <td className="p-3">
+                    <div className="flex items-center gap-2">
+                      <LinkButton
+                        href={`/customers/${customer.id}/edit`}
+                        size="sm"
+                      >
+                        編集
+                      </LinkButton>
+                      <LinkButton
+                        href={`/customers/${customer.id}/delete`}
+                        variant="danger"
+                        size="sm"
+                      >
+                        削除
+                      </LinkButton>
+                      <form action={markContactedAction.bind(null, customer.id)}>
+                        <Button
+                          type="submit"
+                          variant="secondary"
+                          size="sm"
+                        >
+                          今日連絡した
+                        </Button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex items-center justify-center gap-3 text-sm">
         {page > 1 && (
-          <Link
+          <LinkButton
             href={`/customers?q=${query ?? ""}&page=${page - 1}&sort=${sortOrder}`}
-            className="font-bold text-brand-teal hover:text-brand-navy"
+            variant="secondary"
+            size="sm"
           >
             前へ
-          </Link>
+          </LinkButton>
         )}
         {page < totalPages && (
-          <Link
+          <LinkButton
             href={`/customers?q=${query ?? ""}&page=${page + 1}&sort=${sortOrder}`}
-            className="font-bold text-brand-teal hover:text-brand-navy"
+            variant="secondary"
+            size="sm"
           >
             次へ
-          </Link>
+          </LinkButton>
         )}
       </div>
     </main>

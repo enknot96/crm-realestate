@@ -2,10 +2,11 @@ import { getPatrolReportById } from "@/app/lib/patrolReport";
 import { ReportId } from "@/domain/shared/branded";
 import { toPatrolReport } from "@/domain/report/patrolReport";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { PatrolReportEditForm } from "./_components/PatrolReportEditForm";
 import { ApproveAndSendForm } from "./_components/ApproveAndSendForm";
 import { env } from "@/config/env";
+import { Card } from "@/app/(admin)/_components/Card";
+import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function PatrolReportPage(
   props: PageProps<"/properties/[id]/patrol-reports/[reportId]">,
@@ -25,12 +26,13 @@ export default async function PatrolReportPage(
     <main className="mx-auto flex w-full max-w-xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">巡回報告</h1>
-        <Link
+        <LinkButton
           href={`/properties/${row.propertyId}/patrol-reports/${row.id}/delete`}
-          className="text-sm font-bold text-red-600 hover:underline"
+          variant="danger"
+          size="sm"
         >
           この巡回報告を削除
-        </Link>
+        </LinkButton>
       </div>
       {report.kind === "draft" ? (
         <p className="text-sm text-gray-500">
@@ -39,7 +41,7 @@ export default async function PatrolReportPage(
       ) : (
         <>
           {report.photoKeys.length > 0 && (
-            <div className="rounded-lg border border-gray-200 bg-white p-4">
+            <Card>
               <h2 className="mb-2 font-bold text-gray-700">アップロードした写真</h2>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {report.photoKeys.map((key) => (
@@ -52,10 +54,10 @@ export default async function PatrolReportPage(
                   />
                 ))}
               </div>
-            </div>
+            </Card>
           )}
 
-          <div className="rounded-lg border border-gray-200 bg-white p-4">
+          <Card>
             <h2 className="mb-2 font-bold text-gray-700">チェック結果</h2>
             <ul className="flex flex-col gap-1 text-sm">
               {report.checklistResults.map((item) => (
@@ -66,7 +68,7 @@ export default async function PatrolReportPage(
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
 
           {report.kind === "reviewing" && (
             <>
@@ -86,26 +88,26 @@ export default async function PatrolReportPage(
           )}
 
           {report.kind === "approved" && (
-            <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm">
+            <Card className="text-sm">
               <p className="whitespace-pre-wrap">{report.body}</p>
               <p className="mt-2 font-bold text-gray-500">
                 承認済みですが、送信が完了していません。時間をおいて画面を開き直してください。
               </p>
-            </div>
+            </Card>
           )}
 
           {report.kind === "sent" && (
-            <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm">
+            <Card className="text-sm">
               <p className="whitespace-pre-wrap">{report.body}</p>
               <p className="mt-2 font-bold text-brand-teal">LINEに送信済みです</p>
-            </div>
+            </Card>
           )}
 
           {report.kind === "failed" && (
-            <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm">
+            <Card className="text-sm">
               <p className="whitespace-pre-wrap">{report.body}</p>
               <p className="mt-2 font-bold text-red-600">送信に失敗しました：{report.error}</p>
-            </div>
+            </Card>
           )}
         </>
       )}

@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import { approveAndSendPatrolReportAction } from "../actions";
 import { PropertyId, ReportId } from "@/domain/shared/branded";
 import { LinePreview } from "@/app/(admin)/_components/LinePreview";
+import { Card } from "@/app/(admin)/_components/Card";
+import { Button } from "@/app/(admin)/_components/Button";
 
 type Props = {
   reportId: ReportId;
@@ -35,9 +37,10 @@ export function ApproveAndSendForm(props: Props) {
   }
 
   return (
+    <Card>
     <form
       action={formAction}
-      className="flex flex-col gap-2 rounded-lg border border-gray-200 bg-white p-4"
+      className="flex flex-col gap-2"
     >
       <input
         type="hidden"
@@ -50,13 +53,14 @@ export function ApproveAndSendForm(props: Props) {
         value={props.propertyId}
       />
       {state.kind === "error" && <p className="text-sm text-red-600">{state.message}</p>}
-      <button
+      <Button
         type="submit"
         disabled={isPending}
-        className="cursor-pointer self-start rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
+        className="self-start"
       >
         {isPending ? "送信しています…" : "承認してLINEに送信する"}
-      </button>
+      </Button>
     </form>
+    </Card>
   );
 }

@@ -9,7 +9,8 @@ import { CustomerForm } from "../../_components/CustomerForm";
 import { CustomerTagsForm } from "../../_components/CustomerTagsForm";
 import { PropertyForm } from "../../_components/PropertyForm";
 import { updateCustomerAction } from "../../actions";
-import Link from "next/link";
+import { Card } from "@/app/(admin)/_components/Card";
+import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function EditCustomerPage(props: PageProps<"/customers/[id]/edit">) {
   const { id } = await props.params;
@@ -59,14 +60,15 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">顧客の編集</h1>
-        <Link
+        <LinkButton
           href="/customers"
-          className="font-bold text-brand-teal hover:text-brand-navy"
+          variant="secondary"
+          size="sm"
         >
           一覧へ
-        </Link>
+        </LinkButton>
       </div>
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <Card>
         <CustomerForm
           action={updateCustomerAction}
           id={customer.id}
@@ -79,24 +81,24 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
             memo: customer.memo ?? undefined,
           }}
         />
-      </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <Card>
         <h2 className="mb-3 font-bold">タグ</h2>
         <CustomerTagsForm
           customerId={customer.id}
           allTags={allTagsResult.value}
           selectedTagIds={selectedTagIdsResult.value}
         />
-      </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <Card>
         <h2 className="mb-3 font-bold">物件</h2>
         <PropertyForm
           customerId={customer.id}
           properties={propertiesWithReports}
         />
-      </div>
+      </Card>
     </main>
   );
 }

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { setTagsAction } from "../actions";
 import { CustomerId, TagId } from "@/domain/shared/branded";
 import { Tag } from "@/domain/tag/repository";
+import { Button } from "@/app/(admin)/_components/Button";
 
 type Props = {
   customerId: CustomerId;
@@ -32,13 +33,13 @@ export function CustomerTagsForm(props: Props) {
       </div>
       {state?.kind === "error" && <p className="text-sm text-red-600">{state.message}</p>}
       {state?.kind === "success" && <p className="text-sm text-brand-teal">保存しました</p>}
-      <button
+      <Button
         type="submit"
         disabled={isPending}
-        className="cursor-pointer self-start rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
+        className="self-start"
       >
         タグを保存
-      </button>
+      </Button>
     </form>
   );
 }

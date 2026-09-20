@@ -5,6 +5,8 @@ import { createPatrolReportAction } from "../actions";
 import { describeCreatePatrolReportError } from "../errorMessages";
 import { CHECKLIST_ITEMS } from "@/domain/report/checklistItems";
 import { PropertyId } from "@/domain/shared/branded";
+import { Card } from "@/app/(admin)/_components/Card";
+import { Button } from "@/app/(admin)/_components/Button";
 
 type Props = {
   propertyId: PropertyId;
@@ -44,9 +46,10 @@ export function PatrolReportForm(props: Props) {
   }
 
   return (
+    <Card>
     <form
       action={formAction}
-      className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-6"
+      className="flex flex-col gap-4"
     >
       <input
         type="hidden"
@@ -61,7 +64,7 @@ export function PatrolReportForm(props: Props) {
             key={item.key}
             className="flex flex-col gap-2 rounded border border-gray-200 p-3"
           >
-            <legend className="font-bold text-gray-700">{item.label}</legend>
+            <legend className="font-medium text-gray-700">{item.label}</legend>
             <div className="flex gap-4">
               <label className="flex items-center gap-1">
                 <input
@@ -93,7 +96,7 @@ export function PatrolReportForm(props: Props) {
 
       {/* 写真アップロード capture="environment"でスマホの背面カメラを直接起動する */}
       <div className="flex flex-col gap-2">
-        <span className="font-bold text-gray-700">
+        <span className="font-medium text-gray-700">
           現場の写真（最大{MAX_PHOTOS}枚、あと{MAX_PHOTOS - photos.length}枚選べます）
         </span>
 
@@ -105,13 +108,14 @@ export function PatrolReportForm(props: Props) {
                 className="flex items-center justify-between gap-2"
               >
                 <span className="truncate">{photo.name}</span>
-                <button
+                <Button
                   type="button"
+                  variant="danger"
+                  size="sm"
                   onClick={() => removePhoto(index)}
-                  className="cursor-pointer text-red-600 hover:underline"
                 >
                   削除
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
@@ -134,13 +138,14 @@ export function PatrolReportForm(props: Props) {
         <p className="text-sm text-red-600">{describeCreatePatrolReportError(state.error)}</p>
       )}
 
-      <button
+      <Button
         type="submit"
         disabled={isPending}
-        className="cursor-pointer self-start rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
+        className="self-start"
       >
         {isPending ? "作成しています…" : "巡回報告を作成する"}
-      </button>
+      </Button>
     </form>
+    </Card>
   );
 }

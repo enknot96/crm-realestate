@@ -15,6 +15,8 @@ import {
 } from "../errorMessages";
 import { Tag } from "@/domain/tag/repository";
 import { LinePreview } from "@/app/(admin)/_components/LinePreview";
+import { Card } from "@/app/(admin)/_components/Card";
+import { Button } from "@/app/(admin)/_components/Button";
 
 type Props = {
   tags: Tag[];
@@ -74,12 +76,13 @@ export function BroadcastForm(props: Props) {
       {/* 送りたいメッセージと、送りたいタグを指定
           そのタグに合致するLINEユーザーが何人いるかをDBから数える → 「この人数に送るよ」というプレビューが出てくる */}
       {/* action = Enterキーで送信された場合のフォールバック(＝今すぐ送信のプレビュー) */}
+      <Card>
       <form
         action={previewAction}
-        className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-6"
+        className="flex flex-col gap-4"
       >
         <label className="flex flex-col gap-1">
-          <span className="font-bold text-gray-700">送りたい相手のタグ</span>
+          <span className="font-medium text-gray-700">送りたい相手のタグ</span>
           <select
             name="tagId"
             required
@@ -104,7 +107,7 @@ export function BroadcastForm(props: Props) {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="font-bold text-gray-700">送りたい内容</span>
+          <span className="font-medium text-gray-700">送りたい内容</span>
           <textarea
             name="message"
             required
@@ -115,7 +118,7 @@ export function BroadcastForm(props: Props) {
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="font-bold text-gray-700">送信日時を指定する（あとで送りたい場合のみ）</span>
+          <span className="font-medium text-gray-700">送信日時を指定する（あとで送りたい場合のみ）</span>
           <input
             type="datetime-local"
             name="scheduledAt"
@@ -136,26 +139,28 @@ export function BroadcastForm(props: Props) {
         )}
 
         <div className="flex flex-col gap-2 sm:flex-row">
-          <button
+          <Button
             type="submit"
             formAction={previewAction}
             onClick={() => setMode("immediate")}
             disabled={isPreviewPending || props.tags.length === 0}
-            className="cursor-pointer self-start rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
+            className="self-start"
           >
             今すぐ送信内容を確認する
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             formAction={schedulePreviewAction}
             onClick={() => setMode("scheduled")}
             disabled={isSchedulePreviewPending || props.tags.length === 0 || scheduledAt === ""}
-            className="cursor-pointer self-start rounded-lg border border-brand-teal px-4 py-2 font-bold text-brand-teal hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            variant="secondary"
+            className="self-start"
           >
             指定した日時で予約の確認をする
-          </button>
+          </Button>
         </div>
       </form>
+      </Card>
 
       {/* 送信前確認モーダル 宛先の実数と内訳を必ず表示する */}
       <dialog
@@ -208,7 +213,7 @@ export function BroadcastForm(props: Props) {
             )}
 
             <label className="flex flex-col gap-1">
-              <span className="font-bold text-gray-700">
+              <span className="font-medium text-gray-700">
                 確認のため、タグ名「{activePreview.tagName}」ともう一度入力してください
               </span>
               <input
@@ -264,30 +269,28 @@ export function BroadcastForm(props: Props) {
 
             {(isScheduleMode ? scheduleState.kind : confirmState.kind) === "success" ? (
               <div className="flex justify-end">
-                <button
+                <Button
                   type="button"
                   onClick={() => dialogRef.current?.close()}
-                  className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy"
                 >
                   閉じる
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="flex justify-end gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
                   onClick={() => dialogRef.current?.close()}
-                  className="cursor-pointer rounded-lg border border-gray-300 px-4 py-2 font-bold text-gray-600 hover:bg-gray-50"
                 >
                   キャンセル
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
                   disabled={!canSend || (isScheduleMode ? isSchedulePending : isConfirmPending)}
-                  className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isScheduleMode ? "予約する" : "送信する"}
-                </button>
+                </Button>
               </div>
             )}
           </form>

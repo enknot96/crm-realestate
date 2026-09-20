@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { listTags } from "@/app/lib/tag";
 import { CreateTagForm } from "./_components/CreateTagForm";
 import { RemoveTagButton } from "./_components/RemoveTagButton";
+import { Card } from "@/app/(admin)/_components/Card";
+import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function TagsPage() {
   const result = await listTags();
@@ -16,29 +17,31 @@ export default async function TagsPage() {
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">タグ管理</h1>
-        <Link href="/customers" className="font-bold text-brand-teal hover:text-brand-navy">
+        <LinkButton
+          href="/customers"
+          variant="secondary"
+          size="sm"
+        >
           顧客一覧へ
-        </Link>
+        </LinkButton>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <Card>
         <CreateTagForm />
-      </div>
+      </Card>
 
       {tags.length === 0 ? (
-        <p className="rounded-lg border border-gray-200 bg-white p-6 text-center text-sm text-gray-500">
-          タグはまだありません
-        </p>
+        <Card className="text-center text-sm text-gray-500">タグはまだありません</Card>
       ) : (
         <div className="flex flex-col gap-3">
           {tags.map((tag) => (
-            <div
+            <Card
               key={tag.id}
-              className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4"
+              className="flex items-center justify-between"
             >
               <span className="font-bold">{tag.name}</span>
               <RemoveTagButton id={tag.id} />
-            </div>
+            </Card>
           ))}
         </div>
       )}

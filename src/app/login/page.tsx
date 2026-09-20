@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { login } from "./actions";
+import { Button } from "@/app/(admin)/_components/Button";
 
 export default function LoginPage() {
   return (
@@ -31,12 +32,7 @@ export default function LoginPage() {
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-teal focus:outline-none"
             />
           </label>
-          <button
-            type="submit"
-            className="rounded-lg bg-brand-teal px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-brand-navy"
-          >
-            ログイン
-          </button>
+          <Button type="submit">ログイン</Button>
         </form>
       </div>
     </div>
