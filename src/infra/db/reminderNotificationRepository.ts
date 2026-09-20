@@ -7,7 +7,7 @@ import { err, fromPromise, ok } from "@/domain/shared/result";
 const db = getDb();
 
 const NOTIFICATION_UNIQUE_CONSTRAINT =
-  "reminder_notifications_contract_id_rule_type_occurrence_date_unique";
+  "reminder_notifications_contract_id_rule_type_occurrence_date_notice_days_before_unique";
 
 // customerRepository.ts の isPhoneUniqueViolation と同じパターン
 function isDuplicateNotificationViolation(e: unknown): boolean {
@@ -26,6 +26,7 @@ export const drizzleReminderNotificationRepository: ReminderNotificationReposito
           contractId: input.contractId,
           ruleType: input.ruleType,
           occurrenceDate: input.occurrenceDate,
+          noticeDaysBefore: input.noticeDaysBefore,
         })
         .returning();
       if (rows[0] === undefined) {
@@ -50,6 +51,7 @@ export const drizzleReminderNotificationRepository: ReminderNotificationReposito
           contractId: reminderNotifications.contractId,
           ruleType: reminderNotifications.ruleType,
           occurrenceDate: reminderNotifications.occurrenceDate,
+          noticeDaysBefore: reminderNotifications.noticeDaysBefore,
           notifiedAt: reminderNotifications.notifiedAt,
           propertyName: properties.name,
         })

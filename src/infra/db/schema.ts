@@ -157,8 +157,10 @@ export const contracts = pgTable("contracts", {
 });
 
 // ruleTypeは "biweekly_report" | "quarterly_renewal"
-// (contractId, ruleType, occurrenceDate)の組み合わせで一意制約を持たせることで、
-// cronが同じ日に複数回叩かれても2回目のINSERTが一意制約違反になり、二重通知を防げる
+// noticeDaysBefore: 発火日の何日前に送った通知か(例: 3, 7)。当日(0)は今は使わない
+// (contractId, ruleType, occurrenceDate, noticeDaysBefore)の組み合わせで一意制約を持たせることで、
+// 同じ発火日について「7日前」「3日前」を別々に、かつcronが同じ日に複数回叩かれても
+// 2回目のINSERTが一意制約違反になり、二重通知を防げる
 export const reminderNotifications = pgTable(
   "reminder_notifications",
   {
@@ -169,7 +171,8 @@ export const reminderNotifications = pgTable(
       .$type<ContractId>(),
     ruleType: text("rule_type").notNull().$type<ReminderRuleType>(),
     occurrenceDate: timestamp("occurrence_date", { withTimezone: true }).notNull(),
+    noticeDaysBefore: integer("notice_days_before").notNull().default(0),
     notifiedAt: timestamp("notified_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [unique().on(t.contractId, t.ruleType, t.occurrenceDate)],
+  (t) => [unique().on(t.contractId, t.ruleType, t.occurrenceDate, t.noticeDaysBefore)],
 );

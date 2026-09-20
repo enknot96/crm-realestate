@@ -18,8 +18,14 @@ export type ReminderNotification = {
   contractId: ContractId;
   ruleType: ReminderRuleType;
   occurrenceDate: Date;
+  noticeDaysBefore: number;
   notifiedAt: Date;
 };
+
+// INV-8: 画面に専門用語を出さない
+export function noticeLabel(daysBefore: number): string {
+  return `${daysBefore}日前の通知`;
+}
 
 // 通知センターの一覧表示用。物件名まで含めて返す
 export type ReminderNotificationWithProperty = ReminderNotification & {
@@ -31,12 +37,13 @@ export type RecordNotificationError =
   | { kind: "repository"; message: string };
 
 export interface ReminderNotificationRepository {
-  // (contractId, ruleType, occurrenceDate)の一意制約により、
+  // (contractId, ruleType, occurrenceDate, noticeDaysBefore)の一意制約により、
   // 同じ組み合わせで2回目に呼ぶとalreadyNotifiedを返す(cronの二重実行対策)
   record(input: {
     contractId: ContractId;
     ruleType: ReminderRuleType;
     occurrenceDate: Date;
+    noticeDaysBefore: number;
   }): Promise<Result<ReminderNotification, RecordNotificationError>>;
   listRecent(limit: number): Promise<Result<ReminderNotificationWithProperty[], string>>;
 }

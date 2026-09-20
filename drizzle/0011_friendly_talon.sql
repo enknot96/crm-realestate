@@ -1,0 +1,3 @@
+ALTER TABLE "reminder_notifications" DROP CONSTRAINT "reminder_notifications_contract_id_rule_type_occurrence_date_unique";--> statement-breakpoint
+ALTER TABLE "reminder_notifications" ADD COLUMN "notice_days_before" integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE "reminder_notifications" ADD CONSTRAINT "reminder_notifications_contract_id_rule_type_occurrence_date_notice_days_before_unique" UNIQUE("contract_id","rule_type","occurrence_date","notice_days_before");
