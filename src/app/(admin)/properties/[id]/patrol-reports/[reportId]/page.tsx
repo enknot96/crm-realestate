@@ -4,6 +4,7 @@ import { toPatrolReport } from "@/domain/report/patrolReport";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PatrolReportEditForm } from "./_components/PatrolReportEditForm";
+import { ApproveAndSendForm } from "./_components/ApproveAndSendForm";
 
 export default async function PatrolReportPage(
   props: PageProps<"/properties/[id]/patrol-reports/[reportId]">,
@@ -66,11 +67,42 @@ export default async function PatrolReportPage(
             </ul>
           </div>
 
-          <PatrolReportEditForm
-            reportId={row.id}
-            propertyId={row.propertyId}
-            body={report.body}
-          />
+          {report.kind === "reviewing" && (
+            <>
+              <PatrolReportEditForm
+                reportId={row.id}
+                propertyId={row.propertyId}
+                body={report.body}
+              />
+              <ApproveAndSendForm
+                reportId={row.id}
+                propertyId={row.propertyId}
+              />
+            </>
+          )}
+
+          {report.kind === "approved" && (
+            <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm">
+              <p className="whitespace-pre-wrap">{report.body}</p>
+              <p className="mt-2 font-bold text-gray-500">
+                承認済みですが、送信が完了していません。時間をおいて画面を開き直してください。
+              </p>
+            </div>
+          )}
+
+          {report.kind === "sent" && (
+            <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm">
+              <p className="whitespace-pre-wrap">{report.body}</p>
+              <p className="mt-2 font-bold text-brand-teal">LINEに送信済みです</p>
+            </div>
+          )}
+
+          {report.kind === "failed" && (
+            <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm">
+              <p className="whitespace-pre-wrap">{report.body}</p>
+              <p className="mt-2 font-bold text-red-600">送信に失敗しました：{report.error}</p>
+            </div>
+          )}
         </>
       )}
     </main>

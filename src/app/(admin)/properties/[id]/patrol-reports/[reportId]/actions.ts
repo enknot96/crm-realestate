@@ -2,7 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { removePatrolReport, updatePatrolReportBody } from "@/app/lib/patrolReport";
+import {
+  approveAndSendPatrolReport,
+  removePatrolReport,
+  updatePatrolReportBody,
+} from "@/app/lib/patrolReport";
+import { describeApproveAndSendError } from "./errorMessages";
 import { CustomerId, ReportId } from "@/domain/shared/branded";
 
 export type UpdatePatrolReportBodyState =
@@ -21,6 +26,26 @@ export async function updatePatrolReportBodyAction(
   const result = await updatePatrolReportBody(id, body);
   if (result.kind === "err") {
     return { kind: "error", message: result.error };
+  }
+  revalidatePath(`/properties/${propertyId}/patrol-reports/${id}`);
+  return { kind: "success" };
+}
+
+export type ApproveAndSendState =
+  | { kind: "idle" }
+  | { kind: "success" }
+  | { kind: "error"; message: string };
+
+export async function approveAndSendPatrolReportAction(
+  prevState: ApproveAndSendState,
+  formData: FormData,
+): Promise<ApproveAndSendState> {
+  const id = formData.get("reportId") as ReportId;
+  const propertyId = formData.get("propertyId");
+
+  const result = await approveAndSendPatrolReport(id);
+  if (result.kind === "err") {
+    return { kind: "error", message: describeApproveAndSendError(result.error) };
   }
   revalidatePath(`/properties/${propertyId}/patrol-reports/${id}`);
   return { kind: "success" };
