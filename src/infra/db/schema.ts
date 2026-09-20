@@ -1,12 +1,15 @@
 import {
   BroadcastId,
+  ContractId,
   CustomerId,
   LineUserId,
   PropertyId,
+  ReminderNotificationId,
   ReportId,
   TagId,
 } from "@/domain/shared/branded";
 import { ChecklistResult } from "@/domain/report/checklistItems";
+import { ReminderRuleType } from "@/domain/reminder/reminderNotificationRepository";
 import {
   integer,
   jsonb,
@@ -15,6 +18,7 @@ import {
   serial,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -138,3 +142,32 @@ export const broadcasts = pgTable("broadcasts", {
   sentAt: timestamp("sent_at", { withTimezone: true }),
   sentCount: integer("sent_count"),
 });
+
+// 契約日(時刻はJSTの0時に固定して保存する)
+export const contracts = pgTable("contracts", {
+  id: uuid("id").primaryKey().defaultRandom().$type<ContractId>(),
+  propertyId: uuid("property_id")
+    .notNull()
+    .references(() => properties.id)
+    .$type<PropertyId>(),
+  contractDate: timestamp("contract_date", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ruleTypeは "biweekly_report" | "quarterly_renewal"
+// (contractId, ruleType, occurrenceDate)の組み合わせで一意制約を持たせることで、
+// cronが同じ日に複数回叩かれても2回目のINSERTが一意制約違反になり、二重通知を防げる
+export const reminderNotifications = pgTable(
+  "reminder_notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$type<ReminderNotificationId>(),
+    contractId: uuid("contract_id")
+      .notNull()
+      .references(() => contracts.id)
+      .$type<ContractId>(),
+    ruleType: text("rule_type").notNull().$type<ReminderRuleType>(),
+    occurrenceDate: timestamp("occurrence_date", { withTimezone: true }).notNull(),
+    notifiedAt: timestamp("notified_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique().on(t.contractId, t.ruleType, t.occurrenceDate)],
+);

@@ -64,6 +64,13 @@
       "when": 1789806752749,
       "tag": "0008_heavy_king_bedlam",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789881400927,
+      "tag": "0009_strange_swarm",
+      "breakpoints": true
     }
   ]
 }
