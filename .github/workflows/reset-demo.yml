@@ -1,0 +1,21 @@
+name: Reset Demo Data
+
+on:
+  schedule:
+    - cron: "0 15 * * *" # UTC 15:00 = JST 0:00
+  workflow_dispatch: {}
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm reset-demo
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
