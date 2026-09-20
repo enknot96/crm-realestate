@@ -6,7 +6,28 @@ import { env } from "./config/env";
 // proxy.ts
 // どのページが表示される前にも、必ずこれが先に実行されるという、Next.jsの決まりごと
 
+// IPごとに「直近1分間のServer Action呼び出し回数」を数える簡易な実装
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 20;
+const requestTimestampsByIp = new Map<string, number[]>();
+
+function isRateLimited(ip: string, now: number): boolean {
+  const timestamps = (requestTimestampsByIp.get(ip) ?? []).filter(
+    (t) => now - t < RATE_LIMIT_WINDOW_MS,
+  );
+  timestamps.push(now);
+  requestTimestampsByIp.set(ip, timestamps);
+  return timestamps.length > RATE_LIMIT_MAX_REQUESTS;
+}
+
 export async function proxy(request: NextRequest) {
+  if (env.DEMO_MODE && request.method === "POST" && request.headers.has("next-action")) {
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (isRateLimited(ip, Date.now())) {
+      return new Response("しばらく時間をおいてから、もう一度お試しください。", { status: 429 });
+    }
+  }
+
   // action.tsで書いた"session"という名前で保存されている、httpOnly: trueなcookie情報を取得する
   // .get("session")が返すのは、{ name: "session", value: "eyJhbGc..." のようなobjのため、.valueでJWTを取得する
   // ?.value = Cookie自体が見つからなかった場合、undefinedとして扱う
