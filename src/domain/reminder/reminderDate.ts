@@ -13,7 +13,7 @@ export function calculateNextBiweeklyReportDate(contractDate: Date, now: Date): 
 }
 
 // 「ある瞬間のDate」を「JSTカレンダー上の年月日」として読み取る
-function getJstYmd(date: Date): { year: number; month: number; day: number } {
+export function getJstYmd(date: Date): { year: number; month: number; day: number } {
   const shifted = new Date(date.getTime() + JST_OFFSET_MS);
   return {
     year: shifted.getUTCFullYear(),
@@ -25,7 +25,7 @@ function getJstYmd(date: Date): { year: number; month: number; day: number } {
 // getJstYmdの逆
 // 「JSTカレンダー上の年月日」を、その日のJST 0:00に相当する瞬間(Date)に戻す
 // 例）「JSTの4/30 0:00」という1つの瞬間は、UTCの目盛りで読むと「4/29 15:00」になる
-function fromJstYmd(year: number, month: number, day: number): Date {
+export function fromJstYmd(year: number, month: number, day: number): Date {
   return new Date(Date.UTC(year, month, day) - JST_OFFSET_MS);
 }
 
