@@ -8,13 +8,15 @@ if (SESSION_SECRET === undefined) {
   throw new Error("SESSION_SECRETが設定されていません(.env.localを確認してください)");
 }
 
-test.beforeEach(async ({ context }) => {
+test.beforeEach(async ({ context, baseURL }) => {
   const token = await createSessionToken(SESSION_SECRET);
+  // localhostだけでなく、E2E_BASE_URLで指定した本番等のホストにもCookieが効くようにする
+  const domain = new URL(baseURL ?? "http://localhost:3000").hostname;
   await context.addCookies([
     {
       name: "session",
       value: token,
-      domain: "localhost",
+      domain,
       path: "/",
       httpOnly: true,
       secure: true,
