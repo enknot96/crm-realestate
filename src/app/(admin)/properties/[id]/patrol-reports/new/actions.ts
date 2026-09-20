@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createPatrolReport } from "@/app/lib/patrolReport";
+import { requireSession } from "@/app/lib/auth";
 import { CHECKLIST_ITEMS, ChecklistResult } from "@/domain/report/checklistItems";
 import { CreatePatrolReportError, PhotoInput } from "@/domain/report/createPatrolReport";
 import { PropertyId } from "@/domain/shared/branded";
@@ -55,7 +56,8 @@ export async function createPatrolReportAction(
 
   const photos = await parsePhotos(formData);
 
-  const result = await createPatrolReport(propertyId, checklistResults, photos);
+  const permit = await requireSession();
+  const result = await createPatrolReport(permit, propertyId, checklistResults, photos);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }

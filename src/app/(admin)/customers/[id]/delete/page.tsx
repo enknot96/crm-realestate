@@ -1,4 +1,5 @@
 import { getCustomerById } from "@/app/lib/customer";
+import { requireSession } from "@/app/lib/auth";
 import { CustomerId } from "@/domain/shared/branded";
 import { notFound } from "next/navigation";
 import { DeleteConfirmForm } from "./_components/DeleteConfirmForm";
@@ -6,8 +7,9 @@ import { Card } from "@/app/(admin)/_components/Card";
 import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function DeleteCustomerPage(props: PageProps<"/customers/[id]/delete">) {
+  const permit = await requireSession();
   const { id } = await props.params;
-  const result = await getCustomerById(id as CustomerId);
+  const result = await getCustomerById(permit, id as CustomerId);
   if (result.kind === "err") {
     return <p className="p-4 text-red-600">{result.error}</p>;
   }

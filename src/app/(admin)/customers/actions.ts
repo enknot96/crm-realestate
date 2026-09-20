@@ -10,6 +10,7 @@ import {
 } from "@/app/lib/customer";
 import { createProperty } from "@/app/lib/property";
 import { createContract, removeContract } from "@/app/lib/reminder";
+import { requireSession } from "@/app/lib/auth";
 import { CustomerServiceError } from "@/domain/customer/customerService";
 import { PropertyServiceError } from "@/domain/property/propertyService";
 import { ContractServiceError } from "@/domain/reminder/contractService";
@@ -27,8 +28,9 @@ export async function createCustomerAction(
   prevState: CustomerFormActionState,
   formData: FormData,
 ): Promise<CustomerFormActionState> {
+  const permit = await requireSession();
   const input = Object.fromEntries(formData);
-  const result = await createCustomer(input);
+  const result = await createCustomer(permit, input);
   if (result.kind === "err") {
     return result.error;
   }
@@ -39,9 +41,10 @@ export async function updateCustomerAction(
   prevState: CustomerFormActionState,
   formData: FormData,
 ): Promise<CustomerFormActionState> {
+  const permit = await requireSession();
   const input = Object.fromEntries(formData);
   const targetId = formData.get("id");
-  const result = await updateCustomer(targetId as CustomerId, input);
+  const result = await updateCustomer(permit, targetId as CustomerId, input);
   if (result.kind === "err") {
     return result.error;
   }
@@ -52,8 +55,9 @@ export async function removeCustomerAction(
   prevState: RemoveActionState,
   formData: FormData,
 ): Promise<RemoveActionState> {
+  const permit = await requireSession();
   const target = formData.get("id");
-  const result = await removeCustomer(target as CustomerId);
+  const result = await removeCustomer(permit, target as CustomerId);
   if (result.kind === "err") {
     return { message: result.error };
   }
@@ -61,7 +65,8 @@ export async function removeCustomerAction(
 }
 
 export async function markContactedAction(id: CustomerId, formData: FormData) {
-  await markContacted(id);
+  const permit = await requireSession();
+  await markContacted(permit, id);
   revalidatePath("/customers");
 }
 
@@ -71,10 +76,11 @@ export async function setTagsAction(
   prevState: SetTagsActionState,
   formData: FormData,
 ): Promise<SetTagsActionState> {
+  const permit = await requireSession();
   const customerId = formData.get("customerId");
   // チェックボックスは同じname="tagIds"で複数チェックされうるので、getAll()で全部まとめて取り出す
   const tagIds = formData.getAll("tagIds").map((value) => Number(value) as TagId);
-  const result = await setTags(customerId as CustomerId, tagIds);
+  const result = await setTags(permit, customerId as CustomerId, tagIds);
   if (result.kind === "err") {
     return { kind: "error", message: result.error };
   }
@@ -91,9 +97,10 @@ export async function createPropertyAction(
   prevState: CreatePropertyActionState,
   formData: FormData,
 ): Promise<CreatePropertyActionState> {
+  const permit = await requireSession();
   const customerId = formData.get("customerId");
   const input = Object.fromEntries(formData);
-  const result = await createProperty(customerId as CustomerId, input);
+  const result = await createProperty(permit, customerId as CustomerId, input);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }
@@ -106,7 +113,8 @@ export async function removeContractAction(
   customerId: CustomerId,
   formData: FormData,
 ) {
-  await removeContract(id);
+  const permit = await requireSession();
+  await removeContract(permit, id);
   revalidatePath(`/customers/${customerId}/edit`);
 }
 
@@ -119,10 +127,11 @@ export async function createContractAction(
   prevState: CreateContractActionState,
   formData: FormData,
 ): Promise<CreateContractActionState> {
+  const permit = await requireSession();
   const customerId = formData.get("customerId");
   const propertyId = formData.get("propertyId");
   const input = Object.fromEntries(formData);
-  const result = await createContract(propertyId as PropertyId, input);
+  const result = await createContract(permit, propertyId as PropertyId, input);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }

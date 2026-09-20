@@ -8,6 +8,7 @@ import {
   previewScheduledTagBroadcast,
   scheduleTagBroadcast,
 } from "@/app/lib/messaging";
+import { requireSession } from "@/app/lib/auth";
 import { BroadcastPreview, BroadcastPreviewError } from "@/domain/messaging/broadcastPreview";
 import { ConfirmBroadcastError } from "@/domain/messaging/broadcastConfirm";
 import {
@@ -52,8 +53,9 @@ export async function previewBroadcastAction(
   if (tagId === null) {
     return { kind: "error", error: { kind: "tagNotFound" } };
   }
+  const permit = await requireSession();
   const message = String(formData.get("message") ?? "");
-  const result = await previewTagBroadcast(tagId, message);
+  const result = await previewTagBroadcast(permit, tagId, message);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }
@@ -75,7 +77,8 @@ export async function confirmBroadcastAction(
   }
   const typedTagName = String(formData.get("typedTagName") ?? "");
   const message = String(formData.get("message") ?? "");
-  const result = await confirmTagBroadcast(tagId, typedTagName, message);
+  const permit = await requireSession();
+  const result = await confirmTagBroadcast(permit, tagId, typedTagName, message);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }
@@ -102,7 +105,8 @@ export async function previewScheduleBroadcastAction(
   if (scheduledAt === null) {
     return { kind: "error", error: { kind: "pastDateTime" } };
   }
-  const result = await previewScheduledTagBroadcast(tagId, message, scheduledAt);
+  const permit = await requireSession();
+  const result = await previewScheduledTagBroadcast(permit, tagId, message, scheduledAt);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }
@@ -128,7 +132,8 @@ export async function scheduleBroadcastAction(
   if (scheduledAt === null) {
     return { kind: "error", error: { kind: "pastDateTime" } };
   }
-  const result = await scheduleTagBroadcast(tagId, typedTagName, message, scheduledAt);
+  const permit = await requireSession();
+  const result = await scheduleTagBroadcast(permit, tagId, typedTagName, message, scheduledAt);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }

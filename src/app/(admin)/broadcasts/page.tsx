@@ -1,11 +1,13 @@
 import { listTags } from "@/app/lib/tag";
+import { requireSession } from "@/app/lib/auth";
 import { BroadcastForm } from "./_components/BroadcastForm";
 import { env } from "@/config/env";
 import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 import { Card } from "@/app/(admin)/_components/Card";
 
 export default async function BroadcastsPage() {
-  const result = await listTags();
+  const permit = await requireSession();
+  const result = await listTags(permit);
 
   if (result.kind === "err") {
     return <p className="p-4 text-red-600">{result.error}</p>;

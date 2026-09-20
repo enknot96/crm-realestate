@@ -1,12 +1,14 @@
 import { listAllForSelect } from "@/app/lib/customer";
 import { listUnlinkedLineFriends } from "@/app/lib/lineFriend";
+import { requireSession } from "@/app/lib/auth";
 import { LinkForm } from "./_components/LinkForm";
 import { Card } from "@/app/(admin)/_components/Card";
 import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function LineFriendsPage() {
-  const unlinkedResult = await listUnlinkedLineFriends();
-  const customersResult = await listAllForSelect();
+  const permit = await requireSession();
+  const unlinkedResult = await listUnlinkedLineFriends(permit);
+  const customersResult = await listAllForSelect(permit);
 
   if (unlinkedResult.kind === "err") {
     return <p className="p-4 text-red-600">{unlinkedResult.error}</p>;

@@ -23,6 +23,7 @@ import { fakeMessageLogWriter } from "@/infra/fake/messageLogWriter";
 import { createLineMessageSenderFromAccessToken } from "@/infra/line/lineMessageSender";
 import { env } from "@/config/env";
 import { Result } from "@/domain/shared/result";
+import type { CronPermit, SessionPermit } from "./auth";
 
 // DEMO_MODEに応じて実装を切り替える src/domain側には if (DEMO_MODE) を書かない
 const messageSender: MessageSender = env.DEMO_MODE
@@ -42,7 +43,9 @@ const broadcastDeps = {
   messageLogWriter,
 };
 
-export const getRemainingQuota = async (): Promise<Result<number, string>> => {
+export const getRemainingQuota = async (
+  _permit: SessionPermit,
+): Promise<Result<number, string>> => {
   return getRemainingQuotaUseCase(
     drizzleMessageLogRepository,
     new Date(),
@@ -50,10 +53,15 @@ export const getRemainingQuota = async (): Promise<Result<number, string>> => {
   );
 };
 
-export const previewTagBroadcast = (tagId: TagId, message: string) =>
+export const previewTagBroadcast = (_permit: SessionPermit, tagId: TagId, message: string) =>
   previewBroadcast(broadcastDeps, tagId, message, new Date(), env.MONTHLY_MESSAGE_QUOTA);
 
-export const confirmTagBroadcast = (tagId: TagId, typedTagName: string, message: string) =>
+export const confirmTagBroadcast = (
+  _permit: SessionPermit,
+  tagId: TagId,
+  typedTagName: string,
+  message: string,
+) =>
   confirmBroadcast(
     broadcastDeps,
     tagId,
@@ -63,7 +71,12 @@ export const confirmTagBroadcast = (tagId: TagId, typedTagName: string, message:
     env.MONTHLY_MESSAGE_QUOTA,
   );
 
-export const previewScheduledTagBroadcast = (tagId: TagId, message: string, scheduledAt: Date) =>
+export const previewScheduledTagBroadcast = (
+  _permit: SessionPermit,
+  tagId: TagId,
+  message: string,
+  scheduledAt: Date,
+) =>
   previewScheduledBroadcast(
     broadcastDeps,
     tagId,
@@ -74,6 +87,7 @@ export const previewScheduledTagBroadcast = (tagId: TagId, message: string, sche
   );
 
 export const scheduleTagBroadcast = (
+  _permit: SessionPermit,
   tagId: TagId,
   typedTagName: string,
   message: string,
@@ -90,7 +104,7 @@ export const scheduleTagBroadcast = (
 
 // cron(/api/cron/reminders)から呼ばれる
 // 予約時刻が来た配信を発火する
-export const dispatchTodaysBroadcasts = (now: Date) =>
+export const dispatchTodaysBroadcasts = (_permit: CronPermit, now: Date) =>
   dispatchDueBroadcasts(
     {
       broadcastRepo: drizzleBroadcastRepository,

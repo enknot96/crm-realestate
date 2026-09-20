@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listPages } from "@/app/lib/customer";
+import { requireSession } from "@/app/lib/auth";
 import { markContactedAction } from "./actions";
 import { isOverdue } from "@/domain/customer/contactStatus";
 import { Card } from "../_components/Card";
@@ -11,6 +12,7 @@ const PAGE_SIZE = 20;
 const OVERDUE_THRESHOLD_DAYS = 30;
 
 export default async function CustomersPage(props: PageProps<"/customers">) {
+  const permit = await requireSession();
   const searchParams = await props.searchParams;
 
   // ブラウザが/customers?q=田中&page=2へGETでアクセスする
@@ -21,7 +23,7 @@ export default async function CustomersPage(props: PageProps<"/customers">) {
   const sortOrder = searchParams.sort === "desc" ? "desc" : "asc";
   const nextSort = sortOrder === "asc" ? "desc" : "asc";
 
-  const result = await listPages({ query, page, pageSize: PAGE_SIZE, sortOrder });
+  const result = await listPages(permit, { query, page, pageSize: PAGE_SIZE, sortOrder });
 
   if (result.kind === "err") {
     return <p className="p-4 text-red-600">{result.error}</p>;

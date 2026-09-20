@@ -3,6 +3,7 @@ import { listTags } from "@/app/lib/tag";
 import { listPropertiesByCustomerId } from "@/app/lib/property";
 import { listPatrolReportsByPropertyId } from "@/app/lib/patrolReport";
 import { listContractsByPropertyId } from "@/app/lib/reminder";
+import { requireSession } from "@/app/lib/auth";
 import { CustomerId } from "@/domain/shared/branded";
 import { notFound } from "next/navigation";
 import { CustomerForm } from "../../_components/CustomerForm";
@@ -13,8 +14,9 @@ import { Card } from "@/app/(admin)/_components/Card";
 import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function EditCustomerPage(props: PageProps<"/customers/[id]/edit">) {
+  const permit = await requireSession();
   const { id } = await props.params;
-  const result = await getCustomerById(id as CustomerId);
+  const result = await getCustomerById(permit, id as CustomerId);
   if (result.kind === "err") {
     return <p className="p-4 text-red-600">{result.error}</p>;
   }
@@ -26,9 +28,9 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
   // DB操作を一つずつ await ~ ですると、3つのクエリが直列に実行され、待ち時間が多くなるため、
   // Promise.all で3つを同時に投げ、全部完了するのを待つ
   const [allTagsResult, selectedTagIdsResult, propertiesResult] = await Promise.all([
-    listTags(),
-    getTagIds(customer.id),
-    listPropertiesByCustomerId(customer.id),
+    listTags(permit),
+    getTagIds(permit, customer.id),
+    listPropertiesByCustomerId(permit, customer.id),
   ]);
   if (allTagsResult.kind === "err") {
     return <p className="p-4 text-red-600">{allTagsResult.error}</p>;
@@ -45,8 +47,8 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
   const propertiesWithReports = await Promise.all(
     propertiesResult.value.map(async (property) => {
       const [reportsResult, contractsResult] = await Promise.all([
-        listPatrolReportsByPropertyId(property.id),
-        listContractsByPropertyId(property.id),
+        listPatrolReportsByPropertyId(permit, property.id),
+        listContractsByPropertyId(permit, property.id),
       ]);
       return {
         property,

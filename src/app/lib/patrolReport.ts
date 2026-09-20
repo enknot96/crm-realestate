@@ -22,6 +22,7 @@ import { stripExif } from "@/infra/storage/exif";
 import { err, Result } from "@/domain/shared/result";
 import { ApproveAndSendError } from "@/domain/report/approveAndSendPatrolReport";
 import { env } from "@/config/env";
+import type { SessionPermit } from "./auth";
 
 // DEMO_MODEでも常にR2を使う
 const photoStorage = createR2PhotoStorage({
@@ -40,6 +41,7 @@ const patrolReportMessageSender = env.DEMO_MODE
   : createLinePatrolReportSenderFromAccessToken(env.LINE_CHANNEL_ACCESS_TOKEN);
 
 export const createPatrolReport = (
+  _permit: SessionPermit,
   propertyId: PropertyId,
   checklistResults: ChecklistResult[],
   photos: PhotoInput[],
@@ -51,21 +53,25 @@ export const createPatrolReport = (
     photos,
   );
 
-export const getPatrolReportById = (id: ReportId) => drizzlePatrolReportRepository.findById(id);
+export const getPatrolReportById = (_permit: SessionPermit, id: ReportId) =>
+  drizzlePatrolReportRepository.findById(id);
 
-export const listPatrolReportsByPropertyId = (propertyId: PropertyId) =>
+export const listPatrolReportsByPropertyId = (_permit: SessionPermit, propertyId: PropertyId) =>
   drizzlePatrolReportRepository.listByPropertyId(propertyId);
 
-export const updatePatrolReportBody = (id: ReportId, body: string) =>
+export const updatePatrolReportBody = (_permit: SessionPermit, id: ReportId, body: string) =>
   drizzlePatrolReportRepository.updateBody(id, body, "human");
 
-export const downloadPatrolReportPhoto = (key: string) => photoStorage.download(key);
+export const downloadPatrolReportPhoto = (_permit: SessionPermit, key: string) =>
+  photoStorage.download(key);
 
-export const removePatrolReport = (id: ReportId) => drizzlePatrolReportRepository.remove(id);
+export const removePatrolReport = (_permit: SessionPermit, id: ReportId) =>
+  drizzlePatrolReportRepository.remove(id);
 
 export type ApproveAndSendActionError = ApproveAndSendError | { kind: "notFound" };
 
 export const approveAndSendPatrolReport = async (
+  _permit: SessionPermit,
   reportId: ReportId,
 ): Promise<Result<void, ApproveAndSendActionError>> => {
   const reportResult = await drizzlePatrolReportRepository.findById(reportId);

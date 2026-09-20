@@ -7,6 +7,7 @@ import {
   removePatrolReport,
   updatePatrolReportBody,
 } from "@/app/lib/patrolReport";
+import { requireSession } from "@/app/lib/auth";
 import { describeApproveAndSendError } from "./errorMessages";
 import { CustomerId, ReportId } from "@/domain/shared/branded";
 
@@ -23,7 +24,8 @@ export async function updatePatrolReportBodyAction(
   const propertyId = formData.get("propertyId");
   const body = String(formData.get("body") ?? "");
 
-  const result = await updatePatrolReportBody(id, body);
+  const permit = await requireSession();
+  const result = await updatePatrolReportBody(permit, id, body);
   if (result.kind === "err") {
     return { kind: "error", message: result.error };
   }
@@ -43,7 +45,8 @@ export async function approveAndSendPatrolReportAction(
   const id = formData.get("reportId") as ReportId;
   const propertyId = formData.get("propertyId");
 
-  const result = await approveAndSendPatrolReport(id);
+  const permit = await requireSession();
+  const result = await approveAndSendPatrolReport(permit, id);
   if (result.kind === "err") {
     return { kind: "error", message: describeApproveAndSendError(result.error) };
   }
@@ -60,7 +63,8 @@ export async function removePatrolReportAction(
   const id = formData.get("reportId") as ReportId;
   const customerId = formData.get("customerId") as CustomerId;
 
-  const result = await removePatrolReport(id);
+  const permit = await requireSession();
+  const result = await removePatrolReport(permit, id);
   if (result.kind === "err") {
     return { message: result.error };
   }

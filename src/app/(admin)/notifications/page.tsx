@@ -1,4 +1,5 @@
 import { listRecentNotifications } from "@/app/lib/reminder";
+import { requireSession } from "@/app/lib/auth";
 import { noticeLabel, ruleTypeLabel } from "@/domain/reminder/reminderNotificationRepository";
 import { Card } from "@/app/(admin)/_components/Card";
 import { LinkButton } from "@/app/(admin)/_components/LinkButton";
@@ -26,7 +27,8 @@ function formatJstDate(date: Date): string {
 }
 
 export default async function NotificationsPage() {
-  const result = await listRecentNotifications(NOTIFICATION_LIMIT);
+  const permit = await requireSession();
+  const result = await listRecentNotifications(permit, NOTIFICATION_LIMIT);
 
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-4 p-6">

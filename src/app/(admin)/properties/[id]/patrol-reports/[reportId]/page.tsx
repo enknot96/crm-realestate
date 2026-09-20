@@ -1,4 +1,5 @@
 import { getPatrolReportById } from "@/app/lib/patrolReport";
+import { requireSession } from "@/app/lib/auth";
 import { ReportId } from "@/domain/shared/branded";
 import { toPatrolReport } from "@/domain/report/patrolReport";
 import { notFound } from "next/navigation";
@@ -11,8 +12,9 @@ import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 export default async function PatrolReportPage(
   props: PageProps<"/properties/[id]/patrol-reports/[reportId]">,
 ) {
+  const permit = await requireSession();
   const { reportId } = await props.params;
-  const result = await getPatrolReportById(reportId as ReportId);
+  const result = await getPatrolReportById(permit, reportId as ReportId);
   if (result.kind === "err") {
     return <p className="p-4 text-red-600">{result.error}</p>;
   }

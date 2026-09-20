@@ -1,13 +1,13 @@
-import { env } from "@/config/env";
 import { dispatchDailyReminders } from "@/app/lib/reminder";
+import { requireCron } from "@/app/lib/auth";
 
 export async function POST(req: Request) {
-  const authorization = req.headers.get("authorization");
-  if (authorization !== `Bearer ${env.CRON_SECRET}`) {
+  const permit = requireCron(req);
+  if (permit === null) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const result = await dispatchDailyReminders(new Date());
+  const result = await dispatchDailyReminders(permit, new Date());
 
   if (result.reminders.kind === "err") {
     return Response.json({ error: result.reminders.error }, { status: 500 });

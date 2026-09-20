@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionToken } from "@/domain/auth/session";
-import { env } from "@/config/env";
 import { downloadPatrolReportPhoto } from "@/app/lib/patrolReport";
+import { getSession } from "@/app/lib/auth";
 
 // R2は非公開バケットのため、写真は直接<img src>で見せられない
 // ここでログイン済みの管理者だけに、R2から取得した画像バイナリをそのまま返す(簡易プロキシ)。
@@ -10,17 +9,14 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ key: string[] }> },
 ) {
-  const token = request.cookies.get("session")?.value;
-  if (!token) {
-    return new NextResponse(null, { status: 401 });
-  }
-  const sessionResult = await verifySessionToken(token, env.SESSION_SECRET);
-  if (sessionResult.kind === "err") {
+  // <img>から呼ばれるため、未ログイン時はリダイレクトではなく401を返す
+  const permit = await getSession();
+  if (permit === null) {
     return new NextResponse(null, { status: 401 });
   }
 
   const { key } = await params;
-  const result = await downloadPatrolReportPhoto(key.join("/"));
+  const result = await downloadPatrolReportPhoto(permit, key.join("/"));
   if (result.kind === "err") {
     return new NextResponse(null, { status: 404 });
   }

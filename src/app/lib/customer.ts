@@ -5,42 +5,50 @@ import "server-only";
 import type { CustomerId, LineUserId, TagId } from "@/domain/shared/branded";
 import * as customerService from "@/domain/customer/customerService";
 import { drizzleCustomerRepository } from "@/infra/db/customerRepository";
+import type { SessionPermit } from "./auth";
 
-export const getCustomerById = (id: CustomerId) =>
+export const getCustomerById = (_permit: SessionPermit, id: CustomerId) =>
   customerService.getCustomerById(drizzleCustomerRepository, id);
 
-export const createCustomer = (input: unknown) =>
+export const createCustomer = (_permit: SessionPermit, input: unknown) =>
   customerService.createCustomer(drizzleCustomerRepository, input);
 
-export const updateCustomer = (id: CustomerId, input: unknown) =>
+export const updateCustomer = (_permit: SessionPermit, id: CustomerId, input: unknown) =>
   customerService.updateCustomer(drizzleCustomerRepository, id, input);
 
-export const removeCustomer = (id: CustomerId) =>
+export const removeCustomer = (_permit: SessionPermit, id: CustomerId) =>
   customerService.removeCustomer(drizzleCustomerRepository, id);
 
-export const listPages = (params: {
-  query?: string;
-  page: number;
-  pageSize: number;
-  sortOrder?: "asc" | "desc";
-}) => customerService.listPages(drizzleCustomerRepository, params);
+export const listPages = (
+  _permit: SessionPermit,
+  params: {
+    query?: string;
+    page: number;
+    pageSize: number;
+    sortOrder?: "asc" | "desc";
+  },
+) => customerService.listPages(drizzleCustomerRepository, params);
 
-export const linkLineFriend = (id: CustomerId, lineUserId: LineUserId) =>
-  customerService.linkLineFriend(drizzleCustomerRepository, id, lineUserId);
+export const linkLineFriend = (
+  _permit: SessionPermit,
+  id: CustomerId,
+  lineUserId: LineUserId,
+) => customerService.linkLineFriend(drizzleCustomerRepository, id, lineUserId);
 
-export const listAllForSelect = () => customerService.listAllForSelect(drizzleCustomerRepository);
+export const listAllForSelect = (_permit: SessionPermit) =>
+  customerService.listAllForSelect(drizzleCustomerRepository);
 
-export const markContacted = (id: CustomerId) =>
+export const markContacted = (_permit: SessionPermit, id: CustomerId) =>
   customerService.markContacted(drizzleCustomerRepository, id);
 
-export const getTagIds = (id: CustomerId) =>
+export const getTagIds = (_permit: SessionPermit, id: CustomerId) =>
   customerService.getTagIds(drizzleCustomerRepository, id);
 
-export const setTags = (id: CustomerId, tagIds: TagId[]) =>
+export const setTags = (_permit: SessionPermit, id: CustomerId, tagIds: TagId[]) =>
   customerService.setTags(drizzleCustomerRepository, id, tagIds);
 
-export const importCustomersFromCsv = (content: string) =>
+export const importCustomersFromCsv = (_permit: SessionPermit, content: string) =>
   customerService.importCustomersFromCsv(drizzleCustomerRepository, content);
 
-export const exportCustomersToCsv = () =>
+export const exportCustomersToCsv = (_permit: SessionPermit) =>
   customerService.exportCustomersToCsv(drizzleCustomerRepository);

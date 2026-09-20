@@ -1,11 +1,13 @@
 import { listTags } from "@/app/lib/tag";
+import { requireSession } from "@/app/lib/auth";
 import { CreateTagForm } from "./_components/CreateTagForm";
 import { RemoveTagButton } from "./_components/RemoveTagButton";
 import { Card } from "@/app/(admin)/_components/Card";
 import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function TagsPage() {
-  const result = await listTags();
+  const permit = await requireSession();
+  const result = await listTags(permit);
 
   if (result.kind === "err") {
     return <p className="p-4 text-red-600">{result.error}</p>;

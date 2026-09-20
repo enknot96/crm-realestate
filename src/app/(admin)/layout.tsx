@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getRemainingQuota } from "@/app/lib/messaging";
+import { requireSession } from "@/app/lib/auth";
 import { MobileNav } from "./_components/MobileNav";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,8 @@ const NAV_LINKS = [
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const remainingResult = await getRemainingQuota();
+  const permit = await requireSession();
+  const remainingResult = await getRemainingQuota(permit);
 
   return (
     <>
@@ -32,7 +34,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             />
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
-            {/* INV-8: 「通数」「クォータ」等の専門用語は使わず、常に日本語で件数だけを見せる */}
+            {/* 「通数」「クォータ」等の専門用語は使わず、常に日本語で件数だけを見せる */}
             <span className="rounded-full bg-brand-mint/20 px-3 py-1 text-xs font-bold whitespace-nowrap text-brand-navy">
               {remainingResult.kind === "ok"
                 ? `今月あと${remainingResult.value}件送れます`
