@@ -9,6 +9,7 @@ import { previewBroadcast } from "@/domain/messaging/broadcastPreview";
 import { confirmBroadcast } from "@/domain/messaging/broadcastConfirm";
 import { previewScheduledBroadcast } from "@/domain/messaging/previewScheduledBroadcast";
 import { scheduleBroadcast } from "@/domain/messaging/scheduleBroadcast";
+import { dispatchDueBroadcasts } from "@/domain/messaging/broadcastDispatch";
 import { MessageSender } from "@/domain/messaging/messageSender";
 import { MessageLogWriter } from "@/domain/messaging/messageLogWriter";
 import { drizzleTagRepository } from "@/infra/db/tagRepository";
@@ -85,4 +86,19 @@ export const scheduleTagBroadcast = (
     message,
     scheduledAt,
     new Date(),
+  );
+
+// cron(/api/cron/reminders)から呼ばれる
+// 予約時刻が来た配信を発火する
+export const dispatchTodaysBroadcasts = (now: Date) =>
+  dispatchDueBroadcasts(
+    {
+      broadcastRepo: drizzleBroadcastRepository,
+      messageLogRepo: drizzleMessageLogRepository,
+      segmentRepo: drizzleSegmentRepository,
+      messageSender,
+      messageLogWriter,
+    },
+    now,
+    env.MONTHLY_MESSAGE_QUOTA,
   );
