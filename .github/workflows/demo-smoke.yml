@@ -17,46 +17,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: npx playwright install --with-deps chromium
-      - run: pnpm build
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
-          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-          IMAGE_SIGNING_SECRET: ${{ secrets.IMAGE_SIGNING_SECRET }}
-          IMAGE_DELIVERY_BASE_URL: ${{ secrets.IMAGE_DELIVERY_BASE_URL }}
-          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
-          NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
-          DEMO_MODE: "true"
-          MONTHLY_MESSAGE_QUOTA: "200"
+      # E2E_BASE_URLを渡すことで、ローカルでのビルド・起動を省き、デプロイ済みのURLに直接アクセスする。
+      # SESSION_SECRETは本番と同じ値を使い、ログイン画面を経由せずCookieを発行するために必要
       - run: pnpm e2e
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          LINE_CHANNEL_SECRET: ${{ secrets.LINE_CHANNEL_SECRET }}
-          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
-          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
-          IMAGE_SIGNING_SECRET: ${{ secrets.IMAGE_SIGNING_SECRET }}
-          IMAGE_DELIVERY_BASE_URL: ${{ secrets.IMAGE_DELIVERY_BASE_URL }}
+          E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          ADMIN_PASSWORD_HASH: ${{ secrets.ADMIN_PASSWORD_HASH }}
-          NOTIFY_EMAIL_TO: ${{ secrets.NOTIFY_EMAIL_TO }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
-          DEMO_MODE: "true"
-          MONTHLY_MESSAGE_QUOTA: "200"
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
