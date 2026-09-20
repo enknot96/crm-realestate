@@ -42,6 +42,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               >
                 タグ配信
               </Link>
+              <Link
+                href="/notifications"
+                className="text-gray-600 hover:text-brand-teal"
+              >
+                通知
+              </Link>
             </nav>
           </div>
         </div>
