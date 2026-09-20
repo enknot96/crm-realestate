@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listRecentNotifications } from "@/app/lib/reminder";
-import { ruleTypeLabel } from "@/domain/reminder/reminderNotificationRepository";
+import { noticeLabel, ruleTypeLabel } from "@/domain/reminder/reminderNotificationRepository";
 
 const NOTIFICATION_LIMIT = 50;
 
@@ -12,6 +12,15 @@ function formatJst(date: Date): string {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+  }).format(date);
+}
+
+function formatJstDate(date: Date): string {
+  return new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   }).format(date);
 }
 
@@ -48,8 +57,12 @@ export default async function NotificationsPage() {
               className="rounded-lg border border-gray-200 bg-white p-4 text-sm"
             >
               <p className="font-bold">{notification.propertyName}</p>
-              <p className="text-gray-700">{ruleTypeLabel(notification.ruleType)}</p>
-              <p className="text-gray-500">{formatJst(notification.notifiedAt)}に通知</p>
+              <p className="text-gray-700">
+                {ruleTypeLabel(notification.ruleType)}（{formatJstDate(notification.occurrenceDate)}）
+              </p>
+              <p className="text-gray-500">
+                {noticeLabel(notification.noticeDaysBefore)} ・ {formatJst(notification.notifiedAt)}に送信
+              </p>
             </li>
           ))}
         </ul>

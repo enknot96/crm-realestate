@@ -7,7 +7,7 @@ import {
   fromJstYmd,
   getJstYmd,
 } from "./reminderDate";
-import { PropertyRepository } from "../property/repository";
+import { Property, PropertyRepository } from "../property/repository";
 import { err, ok, Result } from "../shared/result";
 
 type Deps = {
@@ -23,11 +23,28 @@ export type ReminderDispatchSummary = {
   emailSent: boolean;
 };
 
-const RULE_TYPES: ReminderRuleType[] = ["biweekly_report", "quarterly_renewal"];
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-const CALCULATORS: Record<ReminderRuleType, (contractDate: Date, now: Date) => Date> = {
-  biweekly_report: calculateNextBiweeklyReportDate,
-  quarterly_renewal: calculateNextQuarterlyRenewalDate,
+type RuleConfig = {
+  calculate: (contractDate: Date, now: Date) => Date;
+  // 発火日の何日前に通知するか。当日(0)は含めない(前もって行動できる余裕を作るため)
+  leadDaysList: number[];
+  buildActionPath: (property: Property) => string;
+};
+
+const RULE_CONFIG: Record<ReminderRuleType, RuleConfig> = {
+  // 2週間ごとの周期は短いため、直前(3日前)の1回だけ
+  biweekly_report: {
+    calculate: calculateNextBiweeklyReportDate,
+    leadDaysList: [3],
+    buildActionPath: (property) => `/properties/${property.id}/patrol-reports/new`,
+  },
+  // 3ヶ月ごとの周期は長いため、早めと直前の2回
+  quarterly_renewal: {
+    calculate: calculateNextQuarterlyRenewalDate,
+    leadDaysList: [7, 3],
+    buildActionPath: (property) => `/customers/${property.customerId}/edit`,
+  },
 };
 
 // 「今日」をJSTの0時ちょうどに正規化する
@@ -39,12 +56,36 @@ function todayAtJstMidnight(now: Date): Date {
   return fromJstYmd(year, month, day);
 }
 
+function formatJstDate(date: Date): string {
+  const { year, month, day } = getJstYmd(date);
+  return `${year}/${month + 1}/${day}`;
+}
+
+type NotifiedItem = {
+  propertyName: string;
+  label: string;
+  occurrenceDate: Date;
+  daysBefore: number;
+  actionUrl: string | null;
+};
+
+function buildEmailBody(items: NotifiedItem[]): string {
+  return items
+    .map((item) => {
+      const headline = `・${item.propertyName}：${item.label}まであと${item.daysBefore}日（${formatJstDate(item.occurrenceDate)}）`;
+      return item.actionUrl === null ? headline : `${headline}\n  ${item.actionUrl}`;
+    })
+    .join("\n\n");
+}
+
 // cronから呼ばれる公開の入り口
-// 全契約 × 2ルールで次回発火日を計算し、今日が発火日のものだけ通知記録→メール送信する
+// 全契約 × 2ルールで次回発火日を計算し、発火日の何日前かがルールごとのリード日数と一致するものだけ
+// 通知記録→メール送信する(当日ちょうどの通知は行わない)
 export async function dispatchDueReminders(
   deps: Deps,
   now: Date,
   notifyEmailTo: string,
+  appBaseUrl: string,
 ): Promise<Result<ReminderDispatchSummary, string>> {
   const contractsResult = await deps.contractRepo.listAll();
   if (contractsResult.kind === "err") {
@@ -53,42 +94,48 @@ export async function dispatchDueReminders(
   const contracts = contractsResult.value;
   const today = todayAtJstMidnight(now);
 
-  const notifiedItems: { propertyName: string; label: string }[] = [];
+  const notifiedItems: NotifiedItem[] = [];
 
   for (const contract of contracts) {
-    for (const ruleType of RULE_TYPES) {
-      const nextOccurrence = CALCULATORS[ruleType](contract.contractDate, today);
-      if (nextOccurrence.getTime() !== today.getTime()) {
+    for (const ruleType of Object.keys(RULE_CONFIG) as ReminderRuleType[]) {
+      const config = RULE_CONFIG[ruleType];
+      const nextOccurrence = config.calculate(contract.contractDate, today);
+      const daysUntilOccurrence = Math.round((nextOccurrence.getTime() - today.getTime()) / DAY_MS);
+      if (!config.leadDaysList.includes(daysUntilOccurrence)) {
         continue;
       }
 
-      // (contractId, ruleType, occurrenceDate)の一意制約により、
-      // 既に今日分を記録済みなら"alreadyNotified"が返り、二重通知にならない
+      // (contractId, ruleType, occurrenceDate, noticeDaysBefore)の一意制約により、
+      // 既に記録済みなら"alreadyNotified"が返り、二重通知にならない
       const recordResult = await deps.notificationRepo.record({
         contractId: contract.id,
         ruleType,
         occurrenceDate: nextOccurrence,
+        noticeDaysBefore: daysUntilOccurrence,
       });
       if (recordResult.kind === "err") {
         continue;
       }
 
       const propertyResult = await deps.propertyRepo.findById(contract.propertyId);
-      const propertyName =
-        propertyResult.kind === "ok" && propertyResult.value !== null
-          ? propertyResult.value.name
-          : "(物件名不明)";
-      notifiedItems.push({ propertyName, label: ruleTypeLabel(ruleType) });
+      const property = propertyResult.kind === "ok" ? propertyResult.value : null;
+
+      notifiedItems.push({
+        propertyName: property?.name ?? "(物件名不明)",
+        label: ruleTypeLabel(ruleType),
+        occurrenceDate: nextOccurrence,
+        daysBefore: daysUntilOccurrence,
+        actionUrl: property !== null ? `${appBaseUrl}${config.buildActionPath(property)}` : null,
+      });
     }
   }
 
   let emailSent = false;
   if (notifiedItems.length > 0) {
-    const body = notifiedItems.map((item) => `・${item.propertyName}：${item.label}`).join("\n");
     const emailResult = await deps.emailSender.send(
       notifyEmailTo,
-      `【CRM】本日のリマインド ${notifiedItems.length}件`,
-      body,
+      `【CRM】もうすぐ期限のお知らせ ${notifiedItems.length}件`,
+      buildEmailBody(notifiedItems),
     );
     emailSent = emailResult.kind === "ok";
   }

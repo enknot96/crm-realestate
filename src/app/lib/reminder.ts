@@ -41,6 +41,7 @@ export const dispatchDailyReminders = async (now: Date) => {
     },
     now,
     env.NOTIFY_EMAIL_TO,
+    env.APP_BASE_URL,
   );
   const broadcasts = await dispatchTodaysBroadcasts(now);
   return { reminders, broadcasts };
