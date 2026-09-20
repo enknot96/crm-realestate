@@ -3,10 +3,14 @@
 import { useActionState } from "react";
 import { approveAndSendPatrolReportAction } from "../actions";
 import { PropertyId, ReportId } from "@/domain/shared/branded";
+import { LinePreview } from "@/app/(admin)/_components/LinePreview";
 
 type Props = {
   reportId: ReportId;
   propertyId: PropertyId;
+  demoMode: boolean;
+  body: string;
+  photoUrls: string[];
 };
 
 export function ApproveAndSendForm(props: Props) {
@@ -16,9 +20,17 @@ export function ApproveAndSendForm(props: Props) {
 
   if (state.kind === "success") {
     return (
-      <p className="rounded-lg border border-brand-teal bg-white p-4 text-sm font-bold text-brand-teal">
-        LINEに送信しました
-      </p>
+      <div className="flex flex-col gap-2">
+        <p className="rounded-lg border border-brand-teal bg-white p-4 text-sm font-bold text-brand-teal">
+          LINEに送信しました
+        </p>
+        {props.demoMode && (
+          <LinePreview
+            text={props.body}
+            photoUrls={props.photoUrls}
+          />
+        )}
+      </div>
     );
   }
 

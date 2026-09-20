@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listTags } from "@/app/lib/tag";
 import { BroadcastForm } from "./_components/BroadcastForm";
+import { env } from "@/config/env";
 
 export default async function BroadcastsPage() {
   const result = await listTags();
@@ -29,7 +30,10 @@ export default async function BroadcastsPage() {
           タグがまだ登録されていません。先に「タグ管理」から作成してください
         </p>
       ) : (
-        <BroadcastForm tags={tags} />
+        <BroadcastForm
+          tags={tags}
+          demoMode={env.DEMO_MODE}
+        />
       )}
     </main>
   );

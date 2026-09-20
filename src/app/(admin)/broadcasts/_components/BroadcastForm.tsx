@@ -14,9 +14,11 @@ import {
   describeSchedulePreviewError,
 } from "../errorMessages";
 import { Tag } from "@/domain/tag/repository";
+import { LinePreview } from "@/app/(admin)/_components/LinePreview";
 
 type Props = {
   tags: Tag[];
+  demoMode: boolean;
 };
 
 // 予約日時をJSTで人間向けに表示する
@@ -252,7 +254,10 @@ export function BroadcastForm(props: Props) {
                   <p className="text-sm text-red-600">{describeConfirmError(confirmState.error)}</p>
                 )}
                 {confirmState.kind === "success" && (
-                  <p className="text-sm text-brand-teal">{confirmState.sentCount}件、送信しました</p>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-brand-teal">{confirmState.sentCount}件、送信しました</p>
+                    {props.demoMode && <LinePreview text={activePreview.message} />}
+                  </div>
                 )}
               </>
             )}

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { PatrolReportEditForm } from "./_components/PatrolReportEditForm";
 import { ApproveAndSendForm } from "./_components/ApproveAndSendForm";
+import { env } from "@/config/env";
 
 export default async function PatrolReportPage(
   props: PageProps<"/properties/[id]/patrol-reports/[reportId]">,
@@ -77,6 +78,9 @@ export default async function PatrolReportPage(
               <ApproveAndSendForm
                 reportId={row.id}
                 propertyId={row.propertyId}
+                demoMode={env.DEMO_MODE}
+                body={report.body}
+                photoUrls={row.photoKeys.map((key) => `/api/patrol-reports/photos/${key}`)}
               />
             </>
           )}
