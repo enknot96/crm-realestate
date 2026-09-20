@@ -10,11 +10,11 @@ describe("calculateNextBiweeklyReportDate", () => {
     );
   });
 
-  it("契約日当日は、契約日そのものを返す", () => {
+  it("契約日当日はまだ発火せず、最初の期限(契約日+14日)を返す", () => {
     const contractDate = new Date("2026-09-01T00:00:00+09:00");
     const now = new Date("2026-09-01T00:00:00+09:00");
     expect(calculateNextBiweeklyReportDate(contractDate, now)).toEqual(
-      new Date("2026-09-01T00:00:00+09:00"),
+      new Date("2026-09-15T00:00:00+09:00"),
     );
   });
 
@@ -67,6 +67,14 @@ describe("calculateNextQuarterlyRenewalDate", () => {
     const now = new Date("2026-08-01T00:00:00+09:00");
     expect(calculateNextQuarterlyRenewalDate(contractDate, now)).toEqual(
       new Date("2026-10-15T00:00:00+09:00"),
+    );
+  });
+
+  it("契約日当日はまだ発火せず、最初の期限(契約日+3ヶ月)を返す", () => {
+    const contractDate = new Date("2026-01-15T00:00:00+09:00");
+    const now = new Date("2026-01-15T00:00:00+09:00");
+    expect(calculateNextQuarterlyRenewalDate(contractDate, now)).toEqual(
+      new Date("2026-04-15T00:00:00+09:00"),
     );
   });
 });

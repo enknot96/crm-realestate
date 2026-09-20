@@ -6,9 +6,11 @@ const BIWEEKLY_PERIOD_MS = 14 * DAY_MS;
 const JST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
 // 次の2週間ごとの報告期限日を計算する関数
+// 契約日当日は「まだ何も報告することがない日」なので発火対象に含めない。
+// 最初の期限は契約日+14日以降になるよう、周期数の最小値を1にする
 export function calculateNextBiweeklyReportDate(contractDate: Date, now: Date): Date {
   const diffMs = now.getTime() - contractDate.getTime();
-  const elapsedPeriods = diffMs <= 0 ? 0 : Math.ceil(diffMs / BIWEEKLY_PERIOD_MS); // 小数点以下を切り上げる関数
+  const elapsedPeriods = Math.max(1, Math.ceil(diffMs / BIWEEKLY_PERIOD_MS));
   return new Date(contractDate.getTime() + elapsedPeriods * BIWEEKLY_PERIOD_MS);
 }
 
@@ -47,12 +49,13 @@ function addMonthsClamped(
 
 // 契約日+3ヶ月, +6ヶ月, +9ヶ月...と候補を1つずつ試し、
 // nowに追いついた最初の候補(＝直近の未来の発火日)を返す
+// 契約日当日は発火対象に含めないため、必ず最低1周期(+3ヶ月)以上先を返す
 export function calculateNextQuarterlyRenewalDate(contractDate: Date, now: Date): Date {
   const { year, month, day } = getJstYmd(contractDate);
 
   let periods = 0;
   let candidate = contractDate;
-  while (candidate.getTime() < now.getTime()) {
+  while (periods === 0 || candidate.getTime() < now.getTime()) {
     periods += 1;
     const next = addMonthsClamped(year, month, day, periods * 3);
     candidate = fromJstYmd(next.year, next.month, next.day);
