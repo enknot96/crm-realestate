@@ -1,0 +1,15 @@
+name: Reminders
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # UTC 0:00 = JST 9:00
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -f -X POST "$CRON_URL" -H "Authorization: Bearer $CRON_SECRET"
+        env:
+          CRON_URL: ${{ vars.CRON_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
