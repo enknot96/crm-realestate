@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getRemainingQuota } from "@/app/lib/messaging";
 import { MobileNav } from "./_components/MobileNav";
 
+export const dynamic = "force-dynamic";
+
 const NAV_LINKS = [
   { href: "/customers", label: "顧客一覧" },
   { href: "/broadcasts", label: "タグ配信" },
