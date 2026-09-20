@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "migrate": "dotenv -e .env.local -- tsx scripts/migrate.ts",
     "test": "dotenv -e .env.local -- vitest run",
     "seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
     "reset-demo": "dotenv -e .env.local -- tsx scripts/reset-demo.ts",
