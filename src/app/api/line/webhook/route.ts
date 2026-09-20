@@ -25,21 +25,16 @@ export async function POST(req: Request) {
   const db = getDb();
 
   for (const event of payload.events) {
-    const inserted = await db
-      .insert(lineWebhookEvents)
-      .values({ eventId: event.webhookEventId })
-      .onConflictDoNothing()
-      .returning();
-
-    if (inserted.length === 0) {
-      continue; // すでに処理済みのイベントなのでスキップ
-    }
-
     // followイベントのときだけ、表示名をLINEから取得する
+    // 取得に失敗しても表示名なしでfriendsの記録は続ける（外部APIの失敗で処理全体を止めない）
     let displayName: string | undefined;
     if (event.type === "follow" && event.source?.type === "user" && event.source.userId) {
-      const profile = await lineClient.getProfile(event.source.userId);
-      displayName = profile.displayName;
+      try {
+        const profile = await lineClient.getProfile(event.source.userId);
+        displayName = profile.displayName;
+      } catch {
+        displayName = undefined;
+      }
     }
 
     const friendEvent = toLineFriendEvent(event, displayName);
@@ -84,6 +79,13 @@ export async function POST(req: Request) {
       default:
         return assertNever(friendEvent);
     }
+
+    // 処理が終わった後に記録する
+    // 先に記録すると、記録後に処理が失敗した場合、LINEの再送時に「処理済み」と判定されて永久にスキップされてしまうため
+    await db
+      .insert(lineWebhookEvents)
+      .values({ eventId: event.webhookEventId })
+      .onConflictDoNothing();
   }
 
   return new Response("OK", { status: 200 });
