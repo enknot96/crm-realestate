@@ -15,6 +15,7 @@ const envSchema = z.object({
   CRON_SECRET: z.string().min(1),
   ADMIN_PASSWORD_HASH: z.string().min(1),
   NOTIFY_EMAIL_TO: z.string().min(1),
+  RESEND_API_KEY: z.string().min(1),
   DEMO_MODE: z.enum(["true", "false"]).transform((v) => v === "true"),
   MONTHLY_MESSAGE_QUOTA: z.coerce.number().positive(),
 });
