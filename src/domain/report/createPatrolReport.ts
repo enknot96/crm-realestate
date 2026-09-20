@@ -28,7 +28,12 @@ export type PhotoInput = {
 };
 
 // 許可する画像形式はJPEG/PNG/WebPのみ
-const ALLOWED_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+// 拡張子はここから導出し、ファイル名由来のユーザー入力を混ぜない
+const MIME_TYPE_EXTENSIONS: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
 // チェック結果→テンプレート文章の生成、写真のEXIF除去→R2保存、DB保存までを1つのユースケースとしてまとめる
 // 生成直後は必ずテンプレート文章のみの reviewing 状態になる
@@ -49,18 +54,21 @@ export async function createPatrolReport(
   if (photos.length === 0) {
     return err({ kind: "noPhotos" });
   }
+  const photoUploads: { photo: PhotoInput; extension: string }[] = [];
   for (const photo of photos) {
-    if (!ALLOWED_MIME_TYPES.has(photo.mimeType)) {
+    const extension = MIME_TYPE_EXTENSIONS[photo.mimeType];
+    if (extension === undefined) {
       return err({ kind: "unsupportedFormat", fileName: photo.fileName });
     }
+    photoUploads.push({ photo, extension });
   }
 
   // 中途半端なdraftを残さないため、1枚でも失敗したら即座に処理を止める
   // 既にアップロード済みの写真の削除は行わないが、DBへの巡回報告レコード自体は作成しない
   const photoKeys: string[] = [];
-  for (const photo of photos) {
+  for (const { photo, extension } of photoUploads) {
     const stripped = await deps.stripExif(photo.buffer);
-    const key = `patrol-reports/${randomUUID()}-${photo.fileName}`;
+    const key = `patrol-reports/${randomUUID()}.${extension}`;
     const uploadResult = await deps.photoStorage.upload(key, stripped, photo.mimeType);
     if (uploadResult.kind === "err") {
       return err({ kind: "storage", message: uploadResult.error });
