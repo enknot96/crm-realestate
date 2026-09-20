@@ -20,11 +20,11 @@ export async function updatePatrolReportBodyAction(
   prevState: UpdatePatrolReportBodyState,
   formData: FormData,
 ): Promise<UpdatePatrolReportBodyState> {
+  const permit = await requireSession();
   const id = formData.get("reportId") as ReportId;
   const propertyId = formData.get("propertyId");
   const body = String(formData.get("body") ?? "");
 
-  const permit = await requireSession();
   const result = await updatePatrolReportBody(permit, id, body);
   if (result.kind === "err") {
     return { kind: "error", message: result.error };
@@ -42,10 +42,10 @@ export async function approveAndSendPatrolReportAction(
   prevState: ApproveAndSendState,
   formData: FormData,
 ): Promise<ApproveAndSendState> {
+  const permit = await requireSession();
   const id = formData.get("reportId") as ReportId;
   const propertyId = formData.get("propertyId");
 
-  const permit = await requireSession();
   const result = await approveAndSendPatrolReport(permit, id);
   if (result.kind === "err") {
     return { kind: "error", message: describeApproveAndSendError(result.error) };
@@ -60,10 +60,10 @@ export async function removePatrolReportAction(
   prevState: RemovePatrolReportState,
   formData: FormData,
 ): Promise<RemovePatrolReportState> {
+  const permit = await requireSession();
   const id = formData.get("reportId") as ReportId;
   const customerId = formData.get("customerId") as CustomerId;
 
-  const permit = await requireSession();
   const result = await removePatrolReport(permit, id);
   if (result.kind === "err") {
     return { message: result.error };

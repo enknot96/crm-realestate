@@ -13,12 +13,12 @@ export async function importCustomersAction(
   prevState: ImportActionState,
   formData: FormData,
 ): Promise<ImportActionState> {
+  const permit = await requireSession();
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return { kind: "error", message: "CSVファイルを選択してください" };
   }
 
-  const permit = await requireSession();
   const content = await file.text();
   const result = await importCustomersFromCsv(permit, content);
   if (result.kind === "err") {

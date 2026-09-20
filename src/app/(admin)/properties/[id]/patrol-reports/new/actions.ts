@@ -47,6 +47,7 @@ export async function createPatrolReportAction(
   prevState: CreatePatrolReportActionState,
   formData: FormData,
 ): Promise<CreatePatrolReportActionState> {
+  const permit = await requireSession();
   const propertyId = formData.get("propertyId") as PropertyId;
 
   const checklistResults = parseChecklistResults(formData);
@@ -56,7 +57,6 @@ export async function createPatrolReportAction(
 
   const photos = await parsePhotos(formData);
 
-  const permit = await requireSession();
   const result = await createPatrolReport(permit, propertyId, checklistResults, photos);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
