@@ -57,6 +57,34 @@
       "when": 1789766692649,
       "tag": "0007_stiff_lily_hollister",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789806752749,
+      "tag": "0008_heavy_king_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789881400927,
+      "tag": "0009_strange_swarm",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789887169080,
+      "tag": "0010_flowery_scarlet_witch",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789889287493,
+      "tag": "0011_friendly_talon",
+      "breakpoints": true
     }
   ]
 }

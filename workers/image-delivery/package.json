@@ -1,0 +1,14 @@
+{
+  "name": "image-delivery-worker",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "secret:set-signing-key": "wrangler secret put IMAGE_SIGNING_SECRET"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5",
+    "typescript": "^5",
+    "wrangler": "^4"
+  }
+}

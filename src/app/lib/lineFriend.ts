@@ -1,4 +1,7 @@
 import { drizzleLineFriendRepository } from "@/infra/db/lineFriendRepository";
 import "server-only";
 
-export const listUnlinkedLineFriends = () => drizzleLineFriendRepository.findUnlinked();
+import type { SessionPermit } from "./auth";
+
+export const listUnlinkedLineFriends = (_permit: SessionPermit) =>
+  drizzleLineFriendRepository.findUnlinked();

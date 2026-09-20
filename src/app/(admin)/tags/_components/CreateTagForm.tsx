@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createTagAction } from "../actions";
+import { Button } from "@/app/(admin)/_components/Button";
 
 export function CreateTagForm() {
   const [state, formAction, isPending] = useActionState(createTagAction, null);
@@ -22,13 +23,12 @@ export function CreateTagForm() {
           <p className="text-sm text-red-600">{state.message}</p>
         )}
       </div>
-      <button
+      <Button
         type="submit"
         disabled={isPending}
-        className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
       >
         追加する
-      </button>
+      </Button>
     </form>
   );
 }

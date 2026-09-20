@@ -1,36 +1,135 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# みらい不動産 CRM
 
-## Getting Started
+不動産の空き家管理・売買仲介を1人で営む事業者を想定した、LINE連携の顧客管理システムです。
 
-First, run the development server:
+## これは何のためのシステムか
+
+不動産業を1人で営む事業者が抱える、次の3つの課題を解決することを目的にしています。
+
+1. LINE登録者に「売主」「買主」等のタグを付け、属性別にまとめて配信したい
+2. 契約日を基準に「2週間ごとの業務報告期限」「3ヶ月ごとの更新時期」を自分に通知してほしい
+3. 現場写真をアップすると報告書の草案ができ、確認・修正のうえ顧客のLINEに送れるようにしたい
+
+管理画面はスマートフォンでの利用を前提に作っています。
+
+## デモを触る
+
+`DEMO_MODE=true` の場合、LINEへの送信・メール送信・AIの清書は行われず、
+サーバー内で完結する疑似実装（`src/infra/fake/`）に差し替わります。
+送信結果はLINEのトーク画面風のプレビューで確認できます。
+
+写真の保存だけはデモでも本物のR2を使います。サーバーレス環境では
+リクエストごとに別のインスタンスが応答しうるため、メモリ上に置いた写真は
+直後の表示で見つからないことがあるからです（表示は認証必須のプロキシ経由）。
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm seed        # 架空の顧客12名・物件5件・履歴データを投入する
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+デモデータは荒らされても、GitHub Actions（`.github/workflows/reset-demo.yml`）により毎日リセットされる想定です。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 技術スタック
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| 領域 | 採用 | 選定理由 |
+|---|---|---|
+| 言語 | TypeScript (strict, `noUncheckedIndexedAccess`) | 型の恩恵を最大化する |
+| フレームワーク | Next.js App Router | Webhook・管理画面・画像配信を1リポジトリに収容 |
+| DB / ORM | Neon (Postgres) / Drizzle ORM | スキーマから型が生える。SQLに近く学習になる |
+| バリデーション | Zod | 環境変数・フォーム入力の単一の真実源 |
+| LINE | `@line/bot-sdk` | 署名検証と型定義が揃っている |
+| ストレージ | Cloudflare R2 | 写真と生成画像。エグレス無料 |
+| 画像配信 | Cloudflare Workers | 署名付き短期URLで報告書の写真を配信 |
+| AI | Vercel AI SDK + `@ai-sdk/google` (Gemini) | 巡回報告の草案生成 |
+| メール | Resend | リマインド通知の送信 |
+| 定期実行 | GitHub Actions (cron) | リマインド発火・デモデータのリセット |
+| テスト | Vitest（ドメインのユニットテスト） + Playwright（スモーク1本） | |
+| 認証 | 自前セッション（`jose`でJWT署名） | 単一ユーザーなので外部Authは過剰と判断 |
 
-## Learn More
+## アーキテクチャ
 
-To learn more about Next.js, take a look at the following resources:
+```mermaid
+flowchart LR
+    subgraph app["src/app (Next.js)"]
+        UI["管理画面 / Server Actions"]
+        API["/api/line/webhook, /api/cron/reminders"]
+        LIB["src/app/lib (DAL・合成ルート)"]
+    end
+    subgraph domain["src/domain (React/Next を import しない)"]
+        UC["ユースケース関数"]
+        IF["インターフェース (Repository / MessageSender / EmailSender)"]
+    end
+    subgraph infra["src/infra"]
+        REAL["本物の実装 (drizzle*, line*, resend*)"]
+        FAKE["Fake実装 (DEMO_MODE用)"]
+    end
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    UI --> LIB
+    API --> LIB
+    LIB --> UC
+    UC --> IF
+    LIB -.DEMO_MODEで差し替え.-> REAL
+    LIB -.DEMO_MODEで差し替え.-> FAKE
+    IF -.実装.-> REAL
+    IF -.実装.-> FAKE
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`src/domain`はDBやLINE SDKの実装を知らず、インターフェースだけに依存します。
+本物の実装（`src/infra`）とデモ用のFake実装のどちらを使うかは、`src/app/lib`（合成ルート）で一箇所に集約して切り替えています。
+`src/domain`に`if (DEMO_MODE)`を書かないことをルールにしています。
 
-## Deploy on Vercel
+## 設計判断で意識したこと
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Branded Types**：`CustomerId`と`LineUserId`のような、意味の異なるID同士を型レベルで区別し、取り違え事故を防ぐ
+- **通数ガードのopaque tokenパターン**：LINEへの送信関数は`QuotaGuard.reserve()`が発行したトークンを要求する設計にし、ガードを経由しない送信がコンパイルエラーになるようにした
+- **冪等性をアプリ層とDB層の両方で守る**：cronの多重実行・2重送信は、アプリのロジックだけでなく、DBの一意制約・主キー制約でも最終防衛している。Webhookは「イベントIDを記録してから処理する」と、記録後に処理が失敗した場合にLINEの再送を永久にスキップしてしまうため、あえて「処理してから記録する」順序にしている。friendsの更新はupsertで冪等なので、再送による二重処理を許容し、取りこぼしを防ぐことを優先する設計にした
+- **依存性逆転**：LINE送信・メール送信・写真保存は全てインターフェース化し、本物とFakeを実行時に差し替える。テストやデモモードのために本番コードを分岐させない
+- **リマインドの計算は純粋関数**：次回発火日をテーブルに保存せず、契約日から都度計算する関数として実装。日付計算（月末クランプ・うるう年・JST境界）はユニットテストを重点的に書いた
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## セットアップ
+
+```bash
+pnpm install
+cp .env.example .env.local  # 値は自分で埋める
+pnpm dev
+```
+
+必要な環境変数（`src/config/env.ts`でZod検証しています）：
+
+| 変数名 | 用途 |
+|---|---|
+| `DATABASE_URL` | Neon (Postgres) への接続文字列 |
+| `LINE_CHANNEL_SECRET` / `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | 巡回報告の草案生成 (Gemini) |
+| `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET_NAME` | 写真の保存先 (Cloudflare R2) |
+| `IMAGE_SIGNING_SECRET` / `IMAGE_DELIVERY_BASE_URL` | 署名付き画像配信 (Cloudflare Workers) |
+| `SESSION_SECRET` | 管理画面ログインのJWT署名鍵 |
+| `CRON_SECRET` | `/api/cron/reminders`の認証 |
+| `ADMIN_PASSWORD_HASH` | 管理者パスワードのハッシュ |
+| `NOTIFY_EMAIL_TO` / `RESEND_API_KEY` | リマインド通知メールの送信先 / Resend |
+| `APP_BASE_URL` | 通知メール本文に載せる管理画面のURL |
+| `DEMO_MODE` | `true`にするとLINE送信・メール送信・AI清書がFake実装に差し替わる（写真保存は本物のR2のまま） |
+| `MONTHLY_MESSAGE_QUOTA` | LINE送信の月間上限（デフォルト200） |
+
+## コマンド一覧
+
+| コマンド | 内容 |
+|---|---|
+| `pnpm dev` | 開発サーバー起動 |
+| `pnpm test` | ドメインのユニットテスト (Vitest) |
+| `pnpm e2e` | 主要導線のスモークテスト (Playwright) |
+| `pnpm typecheck` / `pnpm lint` | 型チェック / Lint |
+| `pnpm seed` | 架空のデモデータを投入 |
+| `pnpm reset-demo` | デモデータをリセット（`seed`と同じ内容。GitHub Actionsから日次実行） |
+
+## デプロイ上の注意
+
+- `SESSION_SECRET` / `CRON_SECRET`は、外部に公開する前に必ず強い値（`openssl rand -hex 32`等）に変更してください
+- Vercel Hobbyプランは非商用限定です。実案件として運用する場合はProプランが必要です
+- Cloudflare Workers（`workers/image-delivery/`）は別途デプロイが必要です
+
+## 今回のスコープ外
+
+- 巡回報告の実際の送信履歴とリマインド発火の連動（リマインドは契約日からの固定スケジュールで動作し、実際に報告書を送ったかどうかは見ていません）
+- 論理削除・データの世代管理（日次リセットで運用上は代替しています）
+- 実際のGitHub Actions・Vercel環境での動作確認（ローカルでの直接実行までを確認済みです）

@@ -29,3 +29,5 @@ export type PropertyId = Brand<string, "PropertyId">;
 export type ReportId = Brand<string, "ReportId">;
 export type TagId = Brand<number, "TagId">;
 export type BroadcastId = Brand<string, "BroadcastId">;
+export type ContractId = Brand<string, "ContractId">;
+export type ReminderNotificationId = Brand<string, "ReminderNotificationId">;

@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+workers/*/node_modules
+workers/*/.wrangler
 /.pnp
 .pnp.*
 .yarn/*
@@ -12,6 +14,10 @@
 
 # testing
 /coverage
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
 
 docs
 

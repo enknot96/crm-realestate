@@ -6,11 +6,16 @@ import { createSessionToken } from "@/domain/auth/session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export async function login(formData: FormData) {
+export type LoginActionState = { message: string } | null;
+
+export async function login(
+  prevState: LoginActionState,
+  formData: FormData,
+): Promise<LoginActionState> {
   const password = formData.get("password");
 
   if (typeof password !== "string" || !verifyPassword(password, env.ADMIN_PASSWORD_HASH)) {
-    return;
+    return { message: "パスワードが正しくありません。もう一度お試しください。" };
   }
 
   const token = await createSessionToken(env.SESSION_SECRET);

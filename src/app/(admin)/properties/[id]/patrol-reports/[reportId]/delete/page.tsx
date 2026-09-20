@@ -1,18 +1,21 @@
 import { getPatrolReportById } from "@/app/lib/patrolReport";
 import { getPropertyById } from "@/app/lib/property";
+import { requireSession } from "@/app/lib/auth";
 import { PropertyId, ReportId } from "@/domain/shared/branded";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { DeleteConfirmForm } from "./_components/DeleteConfirmForm";
+import { Card } from "@/app/(admin)/_components/Card";
+import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function DeletePatrolReportPage(
   props: PageProps<"/properties/[id]/patrol-reports/[reportId]/delete">,
 ) {
+  const permit = await requireSession();
   const { id, reportId } = await props.params;
 
   const [reportResult, propertyResult] = await Promise.all([
-    getPatrolReportById(reportId as ReportId),
-    getPropertyById(id as PropertyId),
+    getPatrolReportById(permit, reportId as ReportId),
+    getPropertyById(permit, id as PropertyId),
   ]);
 
   if (reportResult.kind === "err") {
@@ -34,24 +37,24 @@ export default async function DeletePatrolReportPage(
   return (
     <main className="mx-auto flex w-full max-w-xl flex-col gap-4 p-6">
       <h1 className="text-xl font-bold">本当に削除しますか？</h1>
-      <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm">
+      <Card className="text-sm">
         <p className="font-bold">{property.name}</p>
         <p className="text-gray-500">
           写真{report.photoKeys.length}枚を含む巡回報告です。削除すると元に戻せません。
         </p>
-      </div>
+      </Card>
 
       <div className="flex items-center gap-4">
         <DeleteConfirmForm
           reportId={report.id}
           customerId={property.customerId}
         />
-        <Link
+        <LinkButton
           href={`/properties/${property.id}/patrol-reports/${report.id}`}
-          className="font-bold text-brand-teal hover:text-brand-navy"
+          variant="secondary"
         >
           キャンセルして戻る
-        </Link>
+        </LinkButton>
       </div>
     </main>
   );

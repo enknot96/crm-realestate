@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test": "dotenv -e .env.local -- vitest run"
+    "test": "dotenv -e .env.local -- vitest run",
+    "seed": "dotenv -e .env.local -- tsx scripts/seed.ts",
+    "reset-demo": "dotenv -e .env.local -- tsx scripts/reset-demo.ts",
+    "e2e": "dotenv -e .env.local -- playwright test"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.74",
@@ -23,11 +26,13 @@
     "next": "16.3.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "resend": "^6.28.1",
     "server-only": "^0.0.1",
     "sharp": "^0.35.4",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

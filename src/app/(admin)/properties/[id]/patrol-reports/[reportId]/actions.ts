@@ -2,7 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { removePatrolReport, updatePatrolReportBody } from "@/app/lib/patrolReport";
+import {
+  approveAndSendPatrolReport,
+  removePatrolReport,
+  updatePatrolReportBody,
+} from "@/app/lib/patrolReport";
+import { requireSession } from "@/app/lib/auth";
+import { describeApproveAndSendError } from "./errorMessages";
 import { CustomerId, ReportId } from "@/domain/shared/branded";
 
 export type UpdatePatrolReportBodyState =
@@ -14,13 +20,35 @@ export async function updatePatrolReportBodyAction(
   prevState: UpdatePatrolReportBodyState,
   formData: FormData,
 ): Promise<UpdatePatrolReportBodyState> {
+  const permit = await requireSession();
   const id = formData.get("reportId") as ReportId;
   const propertyId = formData.get("propertyId");
   const body = String(formData.get("body") ?? "");
 
-  const result = await updatePatrolReportBody(id, body);
+  const result = await updatePatrolReportBody(permit, id, body);
   if (result.kind === "err") {
     return { kind: "error", message: result.error };
+  }
+  revalidatePath(`/properties/${propertyId}/patrol-reports/${id}`);
+  return { kind: "success" };
+}
+
+export type ApproveAndSendState =
+  | { kind: "idle" }
+  | { kind: "success" }
+  | { kind: "error"; message: string };
+
+export async function approveAndSendPatrolReportAction(
+  prevState: ApproveAndSendState,
+  formData: FormData,
+): Promise<ApproveAndSendState> {
+  const permit = await requireSession();
+  const id = formData.get("reportId") as ReportId;
+  const propertyId = formData.get("propertyId");
+
+  const result = await approveAndSendPatrolReport(permit, id);
+  if (result.kind === "err") {
+    return { kind: "error", message: describeApproveAndSendError(result.error) };
   }
   revalidatePath(`/properties/${propertyId}/patrol-reports/${id}`);
   return { kind: "success" };
@@ -32,10 +60,11 @@ export async function removePatrolReportAction(
   prevState: RemovePatrolReportState,
   formData: FormData,
 ): Promise<RemovePatrolReportState> {
+  const permit = await requireSession();
   const id = formData.get("reportId") as ReportId;
   const customerId = formData.get("customerId") as CustomerId;
 
-  const result = await removePatrolReport(id);
+  const result = await removePatrolReport(permit, id);
   if (result.kind === "err") {
     return { message: result.error };
   }

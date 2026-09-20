@@ -4,6 +4,7 @@ import { CustomerFormInput } from "@/domain/customer/schema";
 import { CustomerId } from "@/domain/shared/branded";
 import { CustomerFormActionState } from "../actions";
 import { useActionState } from "react";
+import { Button } from "../../_components/Button";
 
 export type Props = {
   action: (
@@ -26,7 +27,7 @@ export function CustomerForm(props: Props) {
 
   const inputClassName = "rounded border border-gray-300 p-2";
   const labelClassName = "flex flex-col gap-1";
-  const labelTextClassName = "font-bold text-gray-700";
+  const labelTextClassName = "font-medium text-gray-700";
   const errorClassName = "text-sm text-red-600";
 
   return (
@@ -105,13 +106,13 @@ export function CustomerForm(props: Props) {
       {/* id情報を送るためのinpt */}
       {props.id && <input type="hidden" name="id" value={props.id} />}
 
-      <button
+      <Button
         type="submit"
         disabled={isPending}
-        className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
+        className="self-start"
       >
         {props.id ? "更新する" : "新規作成する"}
-      </button>
+      </Button>
     </form>
   );
 }

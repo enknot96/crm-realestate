@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { removeTagAction } from "../actions";
 import { TagId } from "@/domain/shared/branded";
+import { Button } from "@/app/(admin)/_components/Button";
 
 type Props = {
   id: TagId;
@@ -14,13 +15,14 @@ export function RemoveTagButton(props: Props) {
   return (
     <form action={formAction} className="flex flex-col items-end gap-1">
       <input type="hidden" name="id" value={props.id} />
-      <button
+      <Button
         type="submit"
+        variant="danger"
+        size="sm"
         disabled={isPending}
-        className="cursor-pointer text-sm font-bold text-red-600 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-50"
       >
         削除
-      </button>
+      </Button>
       {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
     </form>
   );

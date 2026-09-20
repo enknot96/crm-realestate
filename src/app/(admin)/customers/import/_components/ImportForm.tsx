@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { importCustomersAction } from "../actions";
+import { Button } from "@/app/(admin)/_components/Button";
 
 export function ImportForm() {
   const [state, formAction, isPending] = useActionState(importCustomersAction, null);
@@ -9,7 +10,7 @@ export function ImportForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <label className="flex flex-col gap-1">
-        <span className="font-bold text-gray-700">CSVファイル</span>
+        <span className="font-medium text-gray-700">CSVファイル</span>
         <input
           name="file"
           type="file"
@@ -19,13 +20,13 @@ export function ImportForm() {
         />
       </label>
 
-      <button
+      <Button
         type="submit"
         disabled={isPending}
-        className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy disabled:cursor-not-allowed disabled:opacity-50"
+        className="self-start"
       >
         {isPending ? "取り込み中..." : "取り込む"}
-      </button>
+      </Button>
 
       {state?.kind === "error" && <p className="text-sm font-bold text-red-600">{state.message}</p>}
 

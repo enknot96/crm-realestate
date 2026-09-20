@@ -1,0 +1,7 @@
+name = "crm-realestate-image-delivery"
+main = "src/index.ts"
+compatibility_date = "2026-09-19"
+
+[[r2_buckets]]
+binding = "PATROL_REPORTS_BUCKET"
+bucket_name = "crm-realestate-photos"

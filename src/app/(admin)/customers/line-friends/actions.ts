@@ -1,6 +1,7 @@
 "use server";
 
 import { linkLineFriend } from "@/app/lib/customer";
+import { requireSession } from "@/app/lib/auth";
 import { CustomerId, LineUserId } from "@/domain/shared/branded";
 import { redirect } from "next/navigation";
 
@@ -10,9 +11,10 @@ export async function linkLineFriendAction(
   prevState: LinkLineFriendActionState,
   formData: FormData,
 ): Promise<LinkLineFriendActionState> {
+  const permit = await requireSession();
   const customerId = formData.get("customerId");
   const lineUserId = formData.get("lineUserId");
-  const result = await linkLineFriend(customerId as CustomerId, lineUserId as LineUserId);
+  const result = await linkLineFriend(permit, customerId as CustomerId, lineUserId as LineUserId);
 
   if (result.kind === "err") {
     return { message: result.error };

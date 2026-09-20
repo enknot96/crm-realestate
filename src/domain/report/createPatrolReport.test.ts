@@ -25,6 +25,9 @@ function createFakePatrolReportRepository(
     listByPropertyId: notImplemented,
     updateBody: notImplemented,
     remove: notImplemented,
+    approve: notImplemented,
+    markSent: notImplemented,
+    markFailed: notImplemented,
   };
 }
 
@@ -42,11 +45,14 @@ const stripExif = vi.fn(async (buf: Buffer) => buf);
 const createdRow: PatrolReportRow = {
   id: "report-1" as ReportId,
   propertyId,
-  photoKeys: ["patrol-reports/xxx-a.jpg"],
+  photoKeys: ["patrol-reports/xxx.jpg"],
   checklistResults,
   status: "reviewing",
   body: "AIが清書した報告文です",
   generatedBy: "ai",
+  approvedAt: null,
+  sentAt: null,
+  failedReason: null,
   createdAt: new Date(),
 };
 
@@ -75,6 +81,28 @@ describe("createPatrolReport", () => {
         generatedBy: "ai",
       }),
     );
+  });
+
+  it("写真キーにアップロード時のファイル名を含めず、拡張子はmimeTypeから導出する", async () => {
+    const renamedPhoto = {
+      fileName: "original-name.jpg",
+      mimeType: "image/png",
+      buffer: Buffer.from("fake-image"),
+    };
+    const upload = vi.fn<PhotoStorage["upload"]>(async () => ok<void, string>(undefined));
+    const create = vi.fn(async () => ok<PatrolReportRow, string>(createdRow));
+    const textPolisher = createFakeTextPolisher(async () => ok<string, string>("AIが清書した報告文です"));
+    const deps = {
+      photoStorage: createFakePhotoStorage(upload),
+      stripExif,
+      patrolReportRepo: createFakePatrolReportRepository(create),
+      textPolisher,
+    };
+
+    await createPatrolReport(deps, propertyId, checklistResults, [renamedPhoto]);
+
+    const uploadedKey = upload.mock.calls[0]?.[0];
+    expect(uploadedKey).toMatch(/^patrol-reports\/[0-9a-f-]+\.png$/);
   });
 
   it("AI清書に失敗した場合、テンプレート文章のままgeneratedBy: 'template'で保存する", async () => {

@@ -3,6 +3,7 @@
 import { CustomerId, LineUserId } from "@/domain/shared/branded";
 import { linkLineFriendAction } from "../actions";
 import { useActionState } from "react";
+import { Button } from "@/app/(admin)/_components/Button";
 
 type Props = {
   lineUserId: LineUserId;
@@ -43,12 +44,12 @@ export function LinkForm(props: Props) {
           </option>
         ))}
       </select>
-      <button
+      <Button
         type="submit"
-        className="cursor-pointer rounded-lg bg-brand-teal px-4 py-2 font-bold text-white hover:bg-brand-navy"
+        size="sm"
       >
         紐付ける
-      </button>
+      </Button>
       {state?.message && <p className="w-full text-sm text-red-600">{state.message}</p>}
     </form>
   );

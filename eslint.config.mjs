@@ -13,10 +13,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
-  // 仕様書6章: 依存方向の強制(src/domainはReact/Nextを知らない、src/appはsrc/infraを直接呼ばない)
-  // "import" プラグイン自体は eslint-config-next(core-web-vitals) が既に登録済みのため、ここでは再登録しない。
   {
     rules: {
+      // permitのように「型として要求するが本体では読まない」引数を _ 始まりで明示できるようにする
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "import/no-restricted-paths": [
         "error",
         {

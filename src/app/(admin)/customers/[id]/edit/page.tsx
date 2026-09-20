@@ -2,17 +2,21 @@ import { getCustomerById, getTagIds } from "@/app/lib/customer";
 import { listTags } from "@/app/lib/tag";
 import { listPropertiesByCustomerId } from "@/app/lib/property";
 import { listPatrolReportsByPropertyId } from "@/app/lib/patrolReport";
+import { listContractsByPropertyId } from "@/app/lib/reminder";
+import { requireSession } from "@/app/lib/auth";
 import { CustomerId } from "@/domain/shared/branded";
 import { notFound } from "next/navigation";
 import { CustomerForm } from "../../_components/CustomerForm";
 import { CustomerTagsForm } from "../../_components/CustomerTagsForm";
 import { PropertyForm } from "../../_components/PropertyForm";
 import { updateCustomerAction } from "../../actions";
-import Link from "next/link";
+import { Card } from "@/app/(admin)/_components/Card";
+import { LinkButton } from "@/app/(admin)/_components/LinkButton";
 
 export default async function EditCustomerPage(props: PageProps<"/customers/[id]/edit">) {
+  const permit = await requireSession();
   const { id } = await props.params;
-  const result = await getCustomerById(id as CustomerId);
+  const result = await getCustomerById(permit, id as CustomerId);
   if (result.kind === "err") {
     return <p className="p-4 text-red-600">{result.error}</p>;
   }
@@ -24,9 +28,9 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
   // DB操作を一つずつ await ~ ですると、3つのクエリが直列に実行され、待ち時間が多くなるため、
   // Promise.all で3つを同時に投げ、全部完了するのを待つ
   const [allTagsResult, selectedTagIdsResult, propertiesResult] = await Promise.all([
-    listTags(),
-    getTagIds(customer.id),
-    listPropertiesByCustomerId(customer.id),
+    listTags(permit),
+    getTagIds(permit, customer.id),
+    listPropertiesByCustomerId(permit, customer.id),
   ]);
   if (allTagsResult.kind === "err") {
     return <p className="p-4 text-red-600">{allTagsResult.error}</p>;
@@ -38,14 +42,18 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
     return <p className="p-4 text-red-600">{propertiesResult.error}</p>;
   }
 
-  // 物件ごとの巡回報告一覧を並行取得する
+  // 物件ごとの巡回報告一覧・契約情報を並行取得する
   // 失敗した物件は「一覧なし」として扱う(致命的なエラーにはしない)
   const propertiesWithReports = await Promise.all(
     propertiesResult.value.map(async (property) => {
-      const reportsResult = await listPatrolReportsByPropertyId(property.id);
+      const [reportsResult, contractsResult] = await Promise.all([
+        listPatrolReportsByPropertyId(permit, property.id),
+        listContractsByPropertyId(permit, property.id),
+      ]);
       return {
         property,
         reports: reportsResult.kind === "ok" ? reportsResult.value : [],
+        contracts: contractsResult.kind === "ok" ? contractsResult.value : [],
       };
     }),
   );
@@ -54,14 +62,15 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">顧客の編集</h1>
-        <Link
+        <LinkButton
           href="/customers"
-          className="font-bold text-brand-teal hover:text-brand-navy"
+          variant="secondary"
+          size="sm"
         >
           一覧へ
-        </Link>
+        </LinkButton>
       </div>
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <Card>
         <CustomerForm
           action={updateCustomerAction}
           id={customer.id}
@@ -74,24 +83,24 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
             memo: customer.memo ?? undefined,
           }}
         />
-      </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <Card>
         <h2 className="mb-3 font-bold">タグ</h2>
         <CustomerTagsForm
           customerId={customer.id}
           allTags={allTagsResult.value}
           selectedTagIds={selectedTagIdsResult.value}
         />
-      </div>
+      </Card>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <Card>
         <h2 className="mb-3 font-bold">物件</h2>
         <PropertyForm
           customerId={customer.id}
           properties={propertiesWithReports}
         />
-      </div>
+      </Card>
     </main>
   );
 }

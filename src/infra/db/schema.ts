@@ -1,12 +1,15 @@
 import {
   BroadcastId,
+  ContractId,
   CustomerId,
   LineUserId,
   PropertyId,
+  ReminderNotificationId,
   ReportId,
   TagId,
 } from "@/domain/shared/branded";
 import { ChecklistResult } from "@/domain/report/checklistItems";
+import { ReminderRuleType } from "@/domain/reminder/reminderNotificationRepository";
 import {
   integer,
   jsonb,
@@ -15,6 +18,7 @@ import {
   serial,
   text,
   timestamp,
+  unique,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -90,8 +94,9 @@ export const properties = pgTable("properties", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ステートは "draft" | "reviewing" のみ(Phase4a時点)
+// ステートは "draft" | "reviewing" | "approved" | "sent" | "failed"
 // body/generatedByは reviewing になって初めて値が入る
+// approvedAt/sentAt/failedReasonは、それぞれの状態になって初めて値が入る
 export const patrolReports = pgTable("patrol_reports", {
   id: uuid("id").primaryKey().defaultRandom().$type<ReportId>(),
   propertyId: uuid("property_id")
@@ -103,7 +108,19 @@ export const patrolReports = pgTable("patrol_reports", {
   status: text("status").notNull(),
   body: text("body"),
   generatedBy: text("generated_by"),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  failedReason: text("failed_reason"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// 二重送信防止のDB制約
+// report_idをPKにすることで、同じ報告書に対する2回目のINSERTが主キー制約違反になる
+export const patrolReportSends = pgTable("patrol_report_sends", {
+  reportId: uuid("report_id")
+    .primaryKey()
+    .references(() => patrolReports.id)
+    .$type<ReportId>(),
 });
 
 // QuotaGuardの通数カウントの根拠となるテーブル(最小限のカラムのみ)
@@ -125,3 +142,37 @@ export const broadcasts = pgTable("broadcasts", {
   sentAt: timestamp("sent_at", { withTimezone: true }),
   sentCount: integer("sent_count"),
 });
+
+// 契約日(時刻はJSTの0時に固定して保存する)
+// property_idにunique()を付け、1物件につき現在有効な契約は1件までに制限する
+export const contracts = pgTable("contracts", {
+  id: uuid("id").primaryKey().defaultRandom().$type<ContractId>(),
+  propertyId: uuid("property_id")
+    .notNull()
+    .unique()
+    .references(() => properties.id)
+    .$type<PropertyId>(),
+  contractDate: timestamp("contract_date", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ruleTypeは "biweekly_report" | "quarterly_renewal"
+// noticeDaysBefore: 発火日の何日前に送った通知か(例: 3, 7)。当日(0)は今は使わない
+// (contractId, ruleType, occurrenceDate, noticeDaysBefore)の組み合わせで一意制約を持たせることで、
+// 同じ発火日について「7日前」「3日前」を別々に、かつcronが同じ日に複数回叩かれても
+// 2回目のINSERTが一意制約違反になり、二重通知を防げる
+export const reminderNotifications = pgTable(
+  "reminder_notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$type<ReminderNotificationId>(),
+    contractId: uuid("contract_id")
+      .notNull()
+      .references(() => contracts.id)
+      .$type<ContractId>(),
+    ruleType: text("rule_type").notNull().$type<ReminderRuleType>(),
+    occurrenceDate: timestamp("occurrence_date", { withTimezone: true }).notNull(),
+    noticeDaysBefore: integer("notice_days_before").notNull().default(0),
+    notifiedAt: timestamp("notified_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [unique().on(t.contractId, t.ruleType, t.occurrenceDate, t.noticeDaysBefore)],
+);
