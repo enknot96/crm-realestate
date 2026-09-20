@@ -1,6 +1,5 @@
 import Image from "next/image";
-import { login } from "./actions";
-import { Button } from "@/app/(admin)/_components/Button";
+import { LoginForm } from "./_components/LoginForm";
 
 export default function LoginPage() {
   return (
@@ -17,23 +16,9 @@ export default function LoginPage() {
           />
         </div>
 
-        {/* <form action={login}>が送信されると、そのフォーム内にあるname属性付きの入力欄が自動的に集められる
-        それらは、FormDataというオブジェクトにまとめられ、login関数の第一引数として渡してくれる */}
-        <form
-          action={login}
-          className="flex flex-col gap-4"
-        >
-          <label className="flex flex-col gap-1 text-sm text-gray-600">
-            パスワード
-            <input
-              type="password"
-              name="password"
-              required
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-teal focus:outline-none"
-            />
-          </label>
-          <Button type="submit">ログイン</Button>
-        </form>
+        {/* 入力欄はname属性付きでFormDataに集められ、login関数へ渡される
+        エラー表示と送信中の状態を出すため、フォーム本体はClient Componentに切り出している */}
+        <LoginForm />
       </div>
     </div>
   );
