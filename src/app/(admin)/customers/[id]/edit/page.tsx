@@ -2,6 +2,7 @@ import { getCustomerById, getTagIds } from "@/app/lib/customer";
 import { listTags } from "@/app/lib/tag";
 import { listPropertiesByCustomerId } from "@/app/lib/property";
 import { listPatrolReportsByPropertyId } from "@/app/lib/patrolReport";
+import { listContractsByPropertyId } from "@/app/lib/reminder";
 import { CustomerId } from "@/domain/shared/branded";
 import { notFound } from "next/navigation";
 import { CustomerForm } from "../../_components/CustomerForm";
@@ -38,14 +39,18 @@ export default async function EditCustomerPage(props: PageProps<"/customers/[id]
     return <p className="p-4 text-red-600">{propertiesResult.error}</p>;
   }
 
-  // 物件ごとの巡回報告一覧を並行取得する
+  // 物件ごとの巡回報告一覧・契約情報を並行取得する
   // 失敗した物件は「一覧なし」として扱う(致命的なエラーにはしない)
   const propertiesWithReports = await Promise.all(
     propertiesResult.value.map(async (property) => {
-      const reportsResult = await listPatrolReportsByPropertyId(property.id);
+      const [reportsResult, contractsResult] = await Promise.all([
+        listPatrolReportsByPropertyId(property.id),
+        listContractsByPropertyId(property.id),
+      ]);
       return {
         property,
         reports: reportsResult.kind === "ok" ? reportsResult.value : [],
+        contracts: contractsResult.kind === "ok" ? contractsResult.value : [],
       };
     }),
   );

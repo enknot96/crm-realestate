@@ -9,9 +9,11 @@ import {
   updateCustomer,
 } from "@/app/lib/customer";
 import { createProperty } from "@/app/lib/property";
+import { createContract, removeContract } from "@/app/lib/reminder";
 import { CustomerServiceError } from "@/domain/customer/customerService";
 import { PropertyServiceError } from "@/domain/property/propertyService";
-import { CustomerId, TagId } from "@/domain/shared/branded";
+import { ContractServiceError } from "@/domain/reminder/contractService";
+import { ContractId, CustomerId, PropertyId, TagId } from "@/domain/shared/branded";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -92,6 +94,35 @@ export async function createPropertyAction(
   const customerId = formData.get("customerId");
   const input = Object.fromEntries(formData);
   const result = await createProperty(customerId as CustomerId, input);
+  if (result.kind === "err") {
+    return { kind: "error", error: result.error };
+  }
+  revalidatePath(`/customers/${customerId}/edit`);
+  return { kind: "success" };
+}
+
+export async function removeContractAction(
+  id: ContractId,
+  customerId: CustomerId,
+  formData: FormData,
+) {
+  await removeContract(id);
+  revalidatePath(`/customers/${customerId}/edit`);
+}
+
+export type CreateContractActionState =
+  | { kind: "success" }
+  | { kind: "error"; error: ContractServiceError }
+  | null;
+
+export async function createContractAction(
+  prevState: CreateContractActionState,
+  formData: FormData,
+): Promise<CreateContractActionState> {
+  const customerId = formData.get("customerId");
+  const propertyId = formData.get("propertyId");
+  const input = Object.fromEntries(formData);
+  const result = await createContract(propertyId as PropertyId, input);
   if (result.kind === "err") {
     return { kind: "error", error: result.error };
   }
