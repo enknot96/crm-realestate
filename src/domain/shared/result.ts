@@ -16,6 +16,9 @@ export async function fromPromise<T>(
     const value = await fn();
     return ok(value);
   } catch (e) {
-    return err(e instanceof Error ? e.message : errorMessage);
+    // 実際の例外(DBドライバの生SQL等)はサーバー側のログにだけ残す
+    // 画面には常に呼び出し元が渡した日本語メッセージを返す
+    console.error(errorMessage, e);
+    return err(errorMessage);
   }
 }
