@@ -144,10 +144,12 @@ export const broadcasts = pgTable("broadcasts", {
 });
 
 // 契約日(時刻はJSTの0時に固定して保存する)
+// property_idにunique()を付け、1物件につき現在有効な契約は1件までに制限する
 export const contracts = pgTable("contracts", {
   id: uuid("id").primaryKey().defaultRandom().$type<ContractId>(),
   propertyId: uuid("property_id")
     .notNull()
+    .unique()
     .references(() => properties.id)
     .$type<PropertyId>(),
   contractDate: timestamp("contract_date", { withTimezone: true }).notNull(),

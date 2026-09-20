@@ -8,9 +8,16 @@ export type Contract = {
   createdAt: Date;
 };
 
+// property_idのDB一意制約により、既に契約がある物件へのcreateは"duplicateProperty"を返す
+export type CreateContractError = { kind: "duplicateProperty" } | { kind: "repository"; message: string };
+
 export interface ContractRepository {
-  create(input: { propertyId: PropertyId; contractDate: Date }): Promise<Result<Contract, string>>;
+  create(input: {
+    propertyId: PropertyId;
+    contractDate: Date;
+  }): Promise<Result<Contract, CreateContractError>>;
   listByPropertyId(propertyId: PropertyId): Promise<Result<Contract[], string>>;
   // cronで全契約をチェックするために必要
   listAll(): Promise<Result<Contract[], string>>;
+  remove(id: ContractId): Promise<Result<void, string>>;
 }
